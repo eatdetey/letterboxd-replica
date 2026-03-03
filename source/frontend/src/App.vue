@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import HelloWorld from './features/Home/HelloWorld.vue'
+import HelloWorld from '~/features/Home/HelloWorld.vue'
 </script>
-
 <template>
   <div>
     <a href="https://vite.dev" target="_blank">
