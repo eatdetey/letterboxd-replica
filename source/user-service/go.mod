@@ -3,6 +3,7 @@ module github.com/eatdetey/letterboxd-replica/source/user-service
 go 1.25.2
 
 require (
+	github.com/eatdetey/letterboxd-replica/source/go-common v0.0.0-20260303194819-bdae94d0e44a
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose/v3 v3.27.0
