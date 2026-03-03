@@ -1,0 +1,8 @@
+version: v1
+
+# Ниже указываются директории, которые должен видеть buf.
+
+directories:
+  - api/user-service
+  - third-party/googleapis
+  - third-party/grpc-gateway

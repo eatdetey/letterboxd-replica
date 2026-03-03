@@ -1,0 +1,9 @@
+version: v1
+
+plugins:
+  - name: go
+    out: user-service/gen/go
+    opt: [paths=source_relative]
+  - name: go-grpc
+    out: user-service/gen/go
+    opt: [paths=source_relative]
