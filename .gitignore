@@ -30,3 +30,5 @@ lerna-debug.log*
 
 # gRPC
 third-party
+
+.env
