@@ -1,0 +1,6 @@
+grpc_server:
+  port: ":50051"
+migrate:
+  need_to_migrate: true
+shutdown:
+  shutdown_timeout: 5
