@@ -1,0 +1,18 @@
+services:
+
+  user-service:
+    restart: always
+    environment:
+      APP_ENV: prod
+
+  user-db:
+    restart: always
+
+  movie-list-db:
+    restart: always
+
+  movie-db:
+    restart: always
+
+  review-db:
+    restart: always

@@ -1,0 +1,90 @@
+version: "3.9"
+
+x-postgres-env: &postgres-env
+  POSTGRES_USER: ${POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+services:
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    depends_on:
+      user-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: user-db
+      DB_PORT: 5432
+      DB_NAME: ${USER_DB_NAME}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - network
+
+  user-db:
+    image: postgres:16
+    environment:
+      <<: *postgres-env
+      POSTGRES_DB: ${USER_DB_NAME}
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  movie-list-db:
+    image: postgres:16
+    environment:
+      <<: *postgres-env
+      POSTGRES_DB: ${MOVIELIST_DB_NAME}
+    volumes:
+      - movie-list-db-data:/var/lib/postgresql/data
+    networks:
+      - network
+
+  movie-db:
+    image: postgres:16
+    environment:
+      <<: *postgres-env
+      POSTGRES_DB: ${MOVIE_DB_NAME}
+    volumes:
+      - movie-db-data:/var/lib/postgresql/data
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s 
+
+  review-db:
+    image: postgres:16
+    environment:
+      <<: *postgres-env
+      POSTGRES_DB: ${REVIEW_DB_NAME}
+    volumes:
+      - review-db-data:/var/lib/postgresql/data
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  user-db-data:
+  movie-list-db-data:
+  movie-db-data:
+  review-db-data:
+
+networks:
+  network:
