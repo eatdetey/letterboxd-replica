@@ -32,3 +32,5 @@ lerna-debug.log*
 third-party
 
 .env
+__pycache__/
+*venv*/
