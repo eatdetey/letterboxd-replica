@@ -13,6 +13,7 @@ import (
 	"github.com/eatdetey/letterboxd-replica/source/user-service/internal/config/settings"
 	"github.com/eatdetey/letterboxd-replica/source/user-service/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -46,6 +47,9 @@ func (s *UserService) Register(ctx context.Context, req *userpb.RegisterRequest)
 	if req.Username == "" || req.Password == "" || req.Email == "" {
 		return nil, status.Error(codes.InvalidArgument, "username, password and email are required")
 	}
+	if err := validatePassword(req.Password); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	hash := hashPassword(req.Password)
 
@@ -63,16 +67,29 @@ func (s *UserService) Register(ctx context.Context, req *userpb.RegisterRequest)
 		return nil, status.Errorf(codes.Internal, "failed to create user: %v", err)
 	}
 
-	tokens, err := s.generateTokens(ctx, *user)
+	accessToken, refreshToken, err := s.generateTokenPair(*user)
 	if err != nil {
-		return nil, err
+		s.log.Errorw("user_service.generate_tokens_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to generate token")
+	}
+
+	if _, err := s.repo.CreateSession(ctx, repository.Session{
+		UserID:       user.ID,
+		RefreshToken: refreshToken,
+		ExpiresAt:    time.Now().UTC().Add(time.Duration(s.auth.RefreshTokenTTLMin) * time.Minute),
+	}); err != nil {
+		s.log.Errorw("user_service.create_session_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to save session")
 	}
 
 	pbUser := convertUser(*user)
 
 	return &userpb.RegisterResponse{
-		User:   pbUser,
-		Tokens: tokens,
+		User: pbUser,
+		Tokens: &userpb.Tokens{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		},
 	}, nil
 }
 
@@ -93,16 +110,29 @@ func (s *UserService) Login(ctx context.Context, req *userpb.LoginRequest) (*use
 		return nil, status.Error(codes.Unauthenticated, "invalid credentials")
 	}
 
-	tokens, err := s.generateTokens(ctx, *user)
+	accessToken, refreshToken, err := s.generateTokenPair(*user)
 	if err != nil {
-		return nil, err
+		s.log.Errorw("user_service.generate_tokens_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to generate token")
+	}
+
+	if _, err := s.repo.CreateSession(ctx, repository.Session{
+		UserID:       user.ID,
+		RefreshToken: refreshToken,
+		ExpiresAt:    time.Now().UTC().Add(time.Duration(s.auth.RefreshTokenTTLMin) * time.Minute),
+	}); err != nil {
+		s.log.Errorw("user_service.create_session_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to save session")
 	}
 
 	pbUser := convertUser(*user)
 
 	return &userpb.LoginResponse{
-		User:   pbUser,
-		Tokens: tokens,
+		User: pbUser,
+		Tokens: &userpb.Tokens{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		},
 	}, nil
 }
 
@@ -116,23 +146,57 @@ func (s *UserService) Refresh(ctx context.Context, req *userpb.RefreshRequest) (
 		return nil, status.Error(codes.Unauthenticated, "invalid token")
 	}
 
-	userID := claims.Id
-	users, err := s.repo.GetByIDs(ctx, []int64{userID}, nil, 1, 0)
+	session, err := s.repo.GetSessionByToken(ctx, req.RefreshToken)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "invalid token")
+	}
+
+	now := time.Now().UTC()
+	if session.ExpiresAt.Before(now) {
+		_ = s.repo.DeleteSessionByToken(ctx, req.RefreshToken)
+		return nil, status.Error(codes.Unauthenticated, "session expired")
+	}
+
+	if session.UserID != claims.Id {
+		return nil, status.Error(codes.Unauthenticated, "invalid token")
+	}
+
+	users, err := s.repo.GetByIDs(ctx, []int64{session.UserID}, nil, 1, 0)
 	if err != nil || len(users) == 0 {
 		return nil, status.Error(codes.NotFound, "user not found")
 	}
 
-	tokens, err := s.generateTokens(ctx, users[0])
+	user := users[0]
+
+	accessToken, refreshToken, err := s.generateTokenPair(user)
 	if err != nil {
-		return nil, err
+		s.log.Errorw("user_service.generate_tokens_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to generate token")
+	}
+
+	if err := s.repo.DeleteSessionByToken(ctx, req.RefreshToken); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		s.log.Errorw("user_service.delete_session_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to update session")
+	}
+
+	if _, err := s.repo.CreateSession(ctx, repository.Session{
+		UserID:       user.ID,
+		RefreshToken: refreshToken,
+		ExpiresAt:    now.Add(time.Duration(s.auth.RefreshTokenTTLMin) * time.Minute),
+	}); err != nil {
+		s.log.Errorw("user_service.create_session_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to save session")
 	}
 
 	return &userpb.RefreshResponse{
-		Tokens: tokens,
+		Tokens: &userpb.Tokens{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		},
 	}, nil
 }
 
-func (s *UserService) GetUsersByIDs(ctx context.Context, req *userpb.GetUsersByIDsRequest) (*userpb.GetUsersByIDsResponse, error) {
+func (s *UserService) GetUsers(ctx context.Context, req *userpb.GetUsersRequest) (*userpb.GetUsersResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is required")
 	}
@@ -155,40 +219,27 @@ func (s *UserService) GetUsersByIDs(ctx context.Context, req *userpb.GetUsersByI
 		respUsers = append(respUsers, convertUser(u))
 	}
 
-	return &userpb.GetUsersByIDsResponse{
+	return &userpb.GetUsersResponse{
 		Users: respUsers,
 	}, nil
 }
 
-func (s *UserService) generateTokens(ctx context.Context, user repository.User) (*userpb.Tokens, error) {
+func (s *UserService) generateTokenPair(user repository.User) (string, string, error) {
 	now := time.Now().UTC()
 
 	accessToken, err := buildToken(user, []byte(s.auth.AccessSecret), time.Duration(s.auth.AccessTokenTTLMin)*time.Minute, now)
 	if err != nil {
 		s.log.Errorw("user_service.generate_access_token_failed", "err", err)
-		return nil, status.Error(codes.Internal, "failed to generate token")
+		return "", "", err
 	}
 
 	refreshToken, err := buildToken(user, []byte(s.auth.RefreshSecret), time.Duration(s.auth.RefreshTokenTTLMin)*time.Minute, now)
 	if err != nil {
 		s.log.Errorw("user_service.generate_refresh_token_failed", "err", err)
-		return nil, status.Error(codes.Internal, "failed to generate token")
+		return "", "", err
 	}
 
-	_, err = s.repo.CreateSession(ctx, repository.Session{
-		UserID:       user.ID,
-		RefreshToken: refreshToken,
-		ExpiresAt:    now.Add(time.Duration(s.auth.RefreshTokenTTLMin) * time.Minute),
-	})
-	if err != nil {
-		s.log.Errorw("user_service.create_session_failed", "err", err)
-		return nil, status.Error(codes.Internal, "failed to save session")
-	}
-
-	return &userpb.Tokens{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return accessToken, refreshToken, nil
 }
 
 func buildToken(user repository.User, secret []byte, ttl time.Duration, now time.Time) (string, error) {
@@ -215,14 +266,13 @@ func parseToken(tokenStr string, secret []byte) (*commonjwt.Claims, error) {
 
 func convertUser(user repository.User) *userpb.User {
 	return &userpb.User{
-		Id:           user.ID,
-		Username:     user.Username,
-		Email:        user.Email,
-		PasswordHash: user.PasswordHash,
-		Bio:          valueOrEmpty(user.Bio),
-		AvatarUrl:    valueOrEmpty(user.AvatarURL),
-		Status:       user.Status,
-		Role:         convertRole(user.Role),
+		Id:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		Bio:       valueOrEmpty(user.Bio),
+		AvatarUrl: valueOrEmpty(user.AvatarURL),
+		Status:    user.Status,
+		Role:      convertRole(user.Role),
 	}
 }
 
@@ -255,4 +305,25 @@ func isUniqueViolation(err error) bool {
 		return true
 	}
 	return false
+}
+
+func validatePassword(password string) error {
+	if len(password) < 8 {
+		return fmt.Errorf("password must be at least 8 characters")
+	}
+
+	hasLetter := false
+	hasDigit := false
+	for _, r := range password {
+		switch {
+		case ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z'):
+			hasLetter = true
+		case '0' <= r && r <= '9':
+			hasDigit = true
+		}
+	}
+	if !hasLetter || !hasDigit {
+		return fmt.Errorf("password must contain letters and digits")
+	}
+	return nil
 }

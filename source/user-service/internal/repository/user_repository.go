@@ -46,6 +46,8 @@ type UserRepository interface {
 	GetByUsername(ctx context.Context, username string) (*User, error)
 	GetByIDs(ctx context.Context, ids []int64, usernames []string, limit, offset int32) ([]User, error)
 	CreateSession(ctx context.Context, session Session) (*Session, error)
+	GetSessionByToken(ctx context.Context, refreshToken string) (*Session, error)
+	DeleteSessionByToken(ctx context.Context, refreshToken string) error
 }
 
 type userRepository struct {
@@ -193,6 +195,48 @@ func (r *userRepository) CreateSession(ctx context.Context, session Session) (*S
 	return &created, nil
 }
 
+func (r *userRepository) GetSessionByToken(ctx context.Context, refreshToken string) (*Session, error) {
+	if refreshToken == "" {
+		return nil, errors.New("refresh token is required")
+	}
+
+	conn, err := r.pg.GetConn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("acquire connection: %w", err)
+	}
+	defer conn.Release()
+
+	row := conn.QueryRow(ctx, getSessionByTokenQuery, refreshToken)
+
+	var session Session
+	if err := row.Scan(&session.ID, &session.UserID, &session.RefreshToken, &session.ExpiresAt, &session.CreatedAt); err != nil {
+		return nil, err
+	}
+
+	return &session, nil
+}
+
+func (r *userRepository) DeleteSessionByToken(ctx context.Context, refreshToken string) error {
+	if refreshToken == "" {
+		return errors.New("refresh token is required")
+	}
+
+	conn, err := r.pg.GetConn(ctx)
+	if err != nil {
+		return fmt.Errorf("acquire connection: %w", err)
+	}
+	defer conn.Release()
+
+	tag, err := conn.Exec(ctx, deleteSessionByTokenQuery, refreshToken)
+	if err != nil {
+		return fmt.Errorf("delete session: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
+}
+
 func scanUserRow(row pgx.Row) (*User, error) {
 	var user User
 	var bio sql.NullString
@@ -252,4 +296,14 @@ const createSessionQuery = `
 INSERT INTO user_sessions (user_id, refresh_token, expires_at, created_at)
 VALUES ($1, $2, $3, $4)
 RETURNING id, user_id, refresh_token, expires_at, created_at;
+`
+
+const getSessionByTokenQuery = `
+SELECT id, user_id, refresh_token, expires_at, created_at
+FROM user_sessions
+WHERE refresh_token = $1;
+`
+
+const deleteSessionByTokenQuery = `
+DELETE FROM user_sessions WHERE refresh_token = $1;
 `

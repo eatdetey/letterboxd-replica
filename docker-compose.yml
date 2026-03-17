@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  user-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./source/user-service
+      dockerfile: Dockerfile
+    depends_on:
+      user-db:
+        condition: service_healthy
+    environment:
+      - CONFIG_PATH=/etc/user-service/config.yaml
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET}
+      - AUTH_REFRESH_SECRET=${REFRESH_SECRET}
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@user-db:5432/postgres?sslmode=disable
+    volumes:
+      - ./source/configs/user-service/config.yaml:/etc/user-service/config.yaml:ro
+    ports:
+      - "50051:50051"
+    restart: unless-stopped
+
+volumes:
+  user-db-data:

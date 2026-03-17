@@ -8,7 +8,7 @@ service UserService {
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
     rpc Refresh(RefreshRequest) returns (RefreshResponse);
-    rpc GetUsersByIDs(GetUsersByIDsRequest) returns (GetUsersByIDsResponse);
+    rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
 }
 
 enum Role {
@@ -21,11 +21,10 @@ message User {
     int64 id = 1;
     string username = 2;
     string email = 3;
-    string password_hash = 4;
-    string bio = 5;
-    string avatar_url = 6;
-    string status = 7;
-    Role role = 8;
+    string bio = 4;
+    string avatar_url = 5;
+    string status = 6;
+    Role role = 7;
 }
 
 message Tokens {
@@ -62,13 +61,13 @@ message RefreshResponse {
     Tokens tokens = 1;
 }
 
-message GetUsersByIDsRequest {
+message GetUsersRequest {
     repeated int64 ids = 1;
     repeated string usernames = 2;
     int32 limit = 3;
     int32 offset = 4;
 }
 
-message GetUsersByIDsResponse {
+message GetUsersResponse {
     repeated User users = 1;
 }

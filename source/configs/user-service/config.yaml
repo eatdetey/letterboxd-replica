@@ -1,6 +1,18 @@
 grpc_server:
   port: ":50051"
+  max_connection_idle: 300
+  max_connection_age: 0
+  max_connection_age_grace: 0
+  keepalive_time: 7200
+  keepalive_timeout: 20
+  permit_without_stream: false
+
 migrate:
   need_to_migrate: true
+
 shutdown:
   shutdown_timeout: 5
+
+auth:
+  access_token_ttl_min: 15
+  refresh_token_ttl_min: 10080

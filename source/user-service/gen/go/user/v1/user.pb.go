@@ -75,11 +75,10 @@ type User struct {
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	PasswordHash  string                 `protobuf:"bytes,4,opt,name=password_hash,json=passwordHash,proto3" json:"password_hash,omitempty"`
-	Bio           string                 `protobuf:"bytes,5,opt,name=bio,proto3" json:"bio,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,6,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
-	Role          Role                   `protobuf:"varint,8,opt,name=role,proto3,enum=user.v1.Role" json:"role,omitempty"`
+	Bio           string                 `protobuf:"bytes,4,opt,name=bio,proto3" json:"bio,omitempty"`
+	AvatarUrl     string                 `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	Role          Role                   `protobuf:"varint,7,opt,name=role,proto3,enum=user.v1.Role" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -131,13 +130,6 @@ func (x *User) GetUsername() string {
 func (x *User) GetEmail() string {
 	if x != nil {
 		return x.Email
-	}
-	return ""
-}
-
-func (x *User) GetPasswordHash() string {
-	if x != nil {
-		return x.PasswordHash
 	}
 	return ""
 }
@@ -526,7 +518,7 @@ func (x *RefreshResponse) GetTokens() *Tokens {
 	return nil
 }
 
-type GetUsersByIDsRequest struct {
+type GetUsersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ids           []int64                `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
 	Usernames     []string               `protobuf:"bytes,2,rep,name=usernames,proto3" json:"usernames,omitempty"`
@@ -536,20 +528,20 @@ type GetUsersByIDsRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetUsersByIDsRequest) Reset() {
-	*x = GetUsersByIDsRequest{}
+func (x *GetUsersRequest) Reset() {
+	*x = GetUsersRequest{}
 	mi := &file_user_v1_user_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetUsersByIDsRequest) String() string {
+func (x *GetUsersRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetUsersByIDsRequest) ProtoMessage() {}
+func (*GetUsersRequest) ProtoMessage() {}
 
-func (x *GetUsersByIDsRequest) ProtoReflect() protoreflect.Message {
+func (x *GetUsersRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_user_v1_user_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -561,60 +553,60 @@ func (x *GetUsersByIDsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetUsersByIDsRequest.ProtoReflect.Descriptor instead.
-func (*GetUsersByIDsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetUsersRequest.ProtoReflect.Descriptor instead.
+func (*GetUsersRequest) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *GetUsersByIDsRequest) GetIds() []int64 {
+func (x *GetUsersRequest) GetIds() []int64 {
 	if x != nil {
 		return x.Ids
 	}
 	return nil
 }
 
-func (x *GetUsersByIDsRequest) GetUsernames() []string {
+func (x *GetUsersRequest) GetUsernames() []string {
 	if x != nil {
 		return x.Usernames
 	}
 	return nil
 }
 
-func (x *GetUsersByIDsRequest) GetLimit() int32 {
+func (x *GetUsersRequest) GetLimit() int32 {
 	if x != nil {
 		return x.Limit
 	}
 	return 0
 }
 
-func (x *GetUsersByIDsRequest) GetOffset() int32 {
+func (x *GetUsersRequest) GetOffset() int32 {
 	if x != nil {
 		return x.Offset
 	}
 	return 0
 }
 
-type GetUsersByIDsResponse struct {
+type GetUsersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Users         []*User                `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetUsersByIDsResponse) Reset() {
-	*x = GetUsersByIDsResponse{}
+func (x *GetUsersResponse) Reset() {
+	*x = GetUsersResponse{}
 	mi := &file_user_v1_user_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetUsersByIDsResponse) String() string {
+func (x *GetUsersResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetUsersByIDsResponse) ProtoMessage() {}
+func (*GetUsersResponse) ProtoMessage() {}
 
-func (x *GetUsersByIDsResponse) ProtoReflect() protoreflect.Message {
+func (x *GetUsersResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_user_v1_user_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -626,12 +618,12 @@ func (x *GetUsersByIDsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetUsersByIDsResponse.ProtoReflect.Descriptor instead.
-func (*GetUsersByIDsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetUsersResponse.ProtoReflect.Descriptor instead.
+func (*GetUsersResponse) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *GetUsersByIDsResponse) GetUsers() []*User {
+func (x *GetUsersResponse) GetUsers() []*User {
 	if x != nil {
 		return x.Users
 	}
@@ -642,17 +634,16 @@ var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\auser.v1\"\xd9\x01\n" +
+	"\x12user/v1/user.proto\x12\auser.v1\"\xb4\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
-	"\x05email\x18\x03 \x01(\tR\x05email\x12#\n" +
-	"\rpassword_hash\x18\x04 \x01(\tR\fpasswordHash\x12\x10\n" +
-	"\x03bio\x18\x05 \x01(\tR\x03bio\x12\x1d\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x10\n" +
+	"\x03bio\x18\x04 \x01(\tR\x03bio\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\x06 \x01(\tR\tavatarUrl\x12\x16\n" +
-	"\x06status\x18\a \x01(\tR\x06status\x12!\n" +
-	"\x04role\x18\b \x01(\x0e2\r.user.v1.RoleR\x04role\"P\n" +
+	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12!\n" +
+	"\x04role\x18\a \x01(\x0e2\r.user.v1.RoleR\x04role\"P\n" +
 	"\x06Tokens\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"_\n" +
@@ -672,24 +663,24 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x0eRefreshRequest\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\":\n" +
 	"\x0fRefreshResponse\x12'\n" +
-	"\x06tokens\x18\x01 \x01(\v2\x0f.user.v1.TokensR\x06tokens\"t\n" +
-	"\x14GetUsersByIDsRequest\x12\x10\n" +
+	"\x06tokens\x18\x01 \x01(\v2\x0f.user.v1.TokensR\x06tokens\"o\n" +
+	"\x0fGetUsersRequest\x12\x10\n" +
 	"\x03ids\x18\x01 \x03(\x03R\x03ids\x12\x1c\n" +
 	"\tusernames\x18\x02 \x03(\tR\tusernames\x12\x14\n" +
 	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x16\n" +
-	"\x06offset\x18\x04 \x01(\x05R\x06offset\"<\n" +
-	"\x15GetUsersByIDsResponse\x12#\n" +
+	"\x06offset\x18\x04 \x01(\x05R\x06offset\"7\n" +
+	"\x10GetUsersResponse\x12#\n" +
 	"\x05users\x18\x01 \x03(\v2\r.user.v1.UserR\x05users*;\n" +
 	"\x04Role\x12\x14\n" +
 	"\x10ROLE_UNSPECIFIED\x10\x00\x12\r\n" +
 	"\tROLE_USER\x10\x01\x12\x0e\n" +
 	"\n" +
-	"ROLE_ADMIN\x10\x022\x94\x02\n" +
+	"ROLE_ADMIN\x10\x022\x85\x02\n" +
 	"\vUserService\x12?\n" +
 	"\bRegister\x12\x18.user.v1.RegisterRequest\x1a\x19.user.v1.RegisterResponse\x126\n" +
 	"\x05Login\x12\x15.user.v1.LoginRequest\x1a\x16.user.v1.LoginResponse\x12<\n" +
-	"\aRefresh\x12\x17.user.v1.RefreshRequest\x1a\x18.user.v1.RefreshResponse\x12N\n" +
-	"\rGetUsersByIDs\x12\x1d.user.v1.GetUsersByIDsRequest\x1a\x1e.user.v1.GetUsersByIDsResponseB\x1fZ\x1duser-service/gen/go/user;userb\x06proto3"
+	"\aRefresh\x12\x17.user.v1.RefreshRequest\x1a\x18.user.v1.RefreshResponse\x12?\n" +
+	"\bGetUsers\x12\x18.user.v1.GetUsersRequest\x1a\x19.user.v1.GetUsersResponseB\x1fZ\x1duser-service/gen/go/user;userb\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once
@@ -706,17 +697,17 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 var file_user_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_user_v1_user_proto_goTypes = []any{
-	(Role)(0),                     // 0: user.v1.Role
-	(*User)(nil),                  // 1: user.v1.User
-	(*Tokens)(nil),                // 2: user.v1.Tokens
-	(*RegisterRequest)(nil),       // 3: user.v1.RegisterRequest
-	(*RegisterResponse)(nil),      // 4: user.v1.RegisterResponse
-	(*LoginRequest)(nil),          // 5: user.v1.LoginRequest
-	(*LoginResponse)(nil),         // 6: user.v1.LoginResponse
-	(*RefreshRequest)(nil),        // 7: user.v1.RefreshRequest
-	(*RefreshResponse)(nil),       // 8: user.v1.RefreshResponse
-	(*GetUsersByIDsRequest)(nil),  // 9: user.v1.GetUsersByIDsRequest
-	(*GetUsersByIDsResponse)(nil), // 10: user.v1.GetUsersByIDsResponse
+	(Role)(0),                // 0: user.v1.Role
+	(*User)(nil),             // 1: user.v1.User
+	(*Tokens)(nil),           // 2: user.v1.Tokens
+	(*RegisterRequest)(nil),  // 3: user.v1.RegisterRequest
+	(*RegisterResponse)(nil), // 4: user.v1.RegisterResponse
+	(*LoginRequest)(nil),     // 5: user.v1.LoginRequest
+	(*LoginResponse)(nil),    // 6: user.v1.LoginResponse
+	(*RefreshRequest)(nil),   // 7: user.v1.RefreshRequest
+	(*RefreshResponse)(nil),  // 8: user.v1.RefreshResponse
+	(*GetUsersRequest)(nil),  // 9: user.v1.GetUsersRequest
+	(*GetUsersResponse)(nil), // 10: user.v1.GetUsersResponse
 }
 var file_user_v1_user_proto_depIdxs = []int32{
 	0,  // 0: user.v1.User.role:type_name -> user.v1.Role
@@ -725,15 +716,15 @@ var file_user_v1_user_proto_depIdxs = []int32{
 	1,  // 3: user.v1.LoginResponse.user:type_name -> user.v1.User
 	2,  // 4: user.v1.LoginResponse.tokens:type_name -> user.v1.Tokens
 	2,  // 5: user.v1.RefreshResponse.tokens:type_name -> user.v1.Tokens
-	1,  // 6: user.v1.GetUsersByIDsResponse.users:type_name -> user.v1.User
+	1,  // 6: user.v1.GetUsersResponse.users:type_name -> user.v1.User
 	3,  // 7: user.v1.UserService.Register:input_type -> user.v1.RegisterRequest
 	5,  // 8: user.v1.UserService.Login:input_type -> user.v1.LoginRequest
 	7,  // 9: user.v1.UserService.Refresh:input_type -> user.v1.RefreshRequest
-	9,  // 10: user.v1.UserService.GetUsersByIDs:input_type -> user.v1.GetUsersByIDsRequest
+	9,  // 10: user.v1.UserService.GetUsers:input_type -> user.v1.GetUsersRequest
 	4,  // 11: user.v1.UserService.Register:output_type -> user.v1.RegisterResponse
 	6,  // 12: user.v1.UserService.Login:output_type -> user.v1.LoginResponse
 	8,  // 13: user.v1.UserService.Refresh:output_type -> user.v1.RefreshResponse
-	10, // 14: user.v1.UserService.GetUsersByIDs:output_type -> user.v1.GetUsersByIDsResponse
+	10, // 14: user.v1.UserService.GetUsers:output_type -> user.v1.GetUsersResponse
 	11, // [11:15] is the sub-list for method output_type
 	7,  // [7:11] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name

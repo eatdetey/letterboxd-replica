@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -16,16 +15,6 @@ func New(ctx context.Context, connString string) (*PostgresClient, error) {
 	cfg, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, fmt.Errorf("parse postgres config: %w", err)
-	}
-
-	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		names := []string{}
-		types, err := conn.LoadTypes(ctx, names)
-		if err != nil {
-			return fmt.Errorf("load types: %w", err)
-		}
-		conn.TypeMap().RegisterTypes(types)
-		return nil
 	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
