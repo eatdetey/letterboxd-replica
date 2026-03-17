@@ -1,7 +1,7 @@
 <template>
   <v-app-bar flat class="app-header">
     <v-container class="app-header__container">
-      <div class="app-header__brand">CineVault</div>
+      <router-link class="app-header__brand" :to="{ name: 'home' }">CineVault</router-link>
       <div class="app-header__nav">
         <v-btn variant="text" class="app-header__link">Movies</v-btn>
         <v-btn variant="text" class="app-header__link">Lists</v-btn>
@@ -36,6 +36,8 @@
 }
 
 .app-header__brand {
+  color: var(--text-primary);
+  text-decoration: none;
   font-family: var(--display-font);
   font-size: 1.4rem;
   letter-spacing: 0.08em;
