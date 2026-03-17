@@ -1,0 +1,83 @@
+{
+  "items": [
+    {
+      "id": "mov_001",
+      "title": "Neon Horizon",
+      "description": "A courier in a flooded megacity uncovers a conspiracy hidden inside a missing film reel.",
+      "release_year": 2023,
+      "genres": ["Sci-Fi", "Thriller"],
+      "rating": 4.7,
+      "poster_url": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
+      "backdrop_url": "https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=1600&q=80",
+      "is_featured": true,
+      "is_popular": true
+    },
+    {
+      "id": "mov_002",
+      "title": "Salt & Mercury",
+      "description": "Two sisters sail across a fractured archipelago to rebuild their family's lighthouse.",
+      "release_year": 2021,
+      "genres": ["Drama", "Adventure"],
+      "rating": 4.2,
+      "poster_url": "https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=800&q=80",
+      "is_popular": true
+    },
+    {
+      "id": "mov_003",
+      "title": "Midnight Harvest",
+      "description": "A remote farming commune confronts a string of haunting messages from the future.",
+      "release_year": 2022,
+      "genres": ["Mystery", "Horror"],
+      "rating": 4.0,
+      "poster_url": "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80",
+      "is_popular": true
+    },
+    {
+      "id": "mov_004",
+      "title": "Glass Orchestra",
+      "description": "A prodigy composer tries to salvage a symphony and her sanity in a glass city.",
+      "release_year": 2020,
+      "genres": ["Drama", "Music"],
+      "rating": 3.9,
+      "poster_url": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80",
+      "is_popular": true
+    },
+    {
+      "id": "mov_005",
+      "title": "Blue Ember",
+      "description": "A firefighter investigates a series of impossible cold fires sweeping the coast.",
+      "release_year": 2019,
+      "genres": ["Action", "Mystery"],
+      "rating": 3.7,
+      "poster_url": "https://images.unsplash.com/photo-1517602302552-471fe67acf66?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_006",
+      "title": "Paper Moons",
+      "description": "An archivist maps forgotten love letters across a city on the edge of blackout.",
+      "release_year": 2024,
+      "genres": ["Romance", "Drama"],
+      "rating": 4.5,
+      "poster_url": "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_007",
+      "title": "Signal in the Deep",
+      "description": "A research crew receives a signal from beneath the ocean floor after decades of silence.",
+      "release_year": 2022,
+      "genres": ["Sci-Fi", "Adventure"],
+      "rating": 4.1,
+      "poster_url": "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_008",
+      "title": "The Last Projectionist",
+      "description": "A retiring projectionist curates a final night of cinema that rewrites his past.",
+      "release_year": 2018,
+      "genres": ["Drama"],
+      "rating": 4.3,
+      "poster_url": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80"
+    }
+  ],
+  "total": 8
+}
