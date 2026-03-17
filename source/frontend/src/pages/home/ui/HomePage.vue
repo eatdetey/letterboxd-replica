@@ -3,6 +3,9 @@ import { computed, onMounted } from 'vue'
 import { useMoviesStore } from '~/entities/movie/model/moviesStore'
 import MovieCard from '~/entities/movie/ui/MovieCard.vue'
 
+const heroBackdropUrl =
+  'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=1600&q=80'
+
 const moviesStore = useMoviesStore()
 
 onMounted(() => {
@@ -10,59 +13,42 @@ onMounted(() => {
 })
 
 const featured = computed(() => moviesStore.featured)
-const popular = computed(() => moviesStore.popular)
 const allMovies = computed(() => moviesStore.all)
 </script>
 
 <template>
   <div class="home-page">
     <section class="hero" v-if="featured">
-      <div
-        class="hero__backdrop"
-        :style="{ backgroundImage: featured.backdrop_url ? `url(${featured.backdrop_url})` : undefined }"
-      ></div>
+      <div class="hero__backdrop" :style="{ backgroundImage: `url(${heroBackdropUrl})` }"></div>
       <v-container class="hero__content">
-        <div class="hero__badge">Featured</div>
-        <h1 class="hero__title">{{ featured.title }}</h1>
-        <p class="hero__description">{{ featured.description }}</p>
-        <div class="hero__meta">
-          <span>{{ featured.release_year }}</span>
-          <span class="dot">•</span>
-          <span>{{ featured.genres.join(', ') }}</span>
-          <span class="dot">•</span>
-          <span v-if="featured.rating !== undefined">{{ featured.rating.toFixed(1) }} rating</span>
-        </div>
-        <div class="hero__actions">
-          <v-btn
-            color="white"
-            variant="flat"
-            class="hero__primary"
-            :to="{ name: 'movie', params: { id: featured.id } }"
-          >
-            View details
-          </v-btn>
-          <v-btn color="white" variant="outlined" class="hero__secondary">Add to watchlist</v-btn>
-        </div>
-      </v-container>
-    </section>
+        <div class="hero__grid">
+          <div class="hero__copy">
+            <div class="hero__badge">Now showing</div>
+            <h1 class="hero__title">{{ featured.title }}</h1>
+            <p class="hero__description">{{ featured.description }}</p>
+            <div class="hero__meta">
+              <span>{{ featured.release_year }}</span>
+              <span class="dot">•</span>
+              <span>{{ featured.genres.join(', ') }}</span>
+            </div>
+            <div class="hero__actions">
+              <v-btn
+                color="white"
+                variant="flat"
+                class="hero__primary"
+                :to="{ name: 'movie', params: { id: featured.id } }"
+              >
+                View details
+              </v-btn>
+              <v-btn color="white" variant="outlined" class="hero__secondary">Add to watchlist</v-btn>
+            </div>
+          </div>
 
-    <section class="section" v-if="popular.length">
-      <v-container>
-        <div class="section__header">
-          <h2 class="section__title">Popular right now</h2>
-          <v-btn variant="text" class="section__action">See all</v-btn>
+          <div
+            class="hero__poster"
+            :style="{ backgroundImage: featured.poster_url ? `url(${featured.poster_url})` : undefined }"
+          ></div>
         </div>
-        <v-row>
-          <v-col
-            v-for="movie in popular"
-            :key="movie.id"
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <MovieCard :movie="movie" variant="compact" />
-          </v-col>
-        </v-row>
       </v-container>
     </section>
 
@@ -112,6 +98,7 @@ const allMovies = computed(() => moviesStore.all)
   overflow: hidden;
   margin: 24px;
   background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .hero__backdrop {
@@ -119,14 +106,15 @@ const allMovies = computed(() => moviesStore.all)
   inset: 0;
   background-size: cover;
   background-position: center;
-  filter: saturate(1.1);
 }
 
 .hero__backdrop::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(8, 10, 13, 0.92) 20%, rgba(8, 10, 13, 0.4) 70%);
+  background:
+    linear-gradient(90deg, rgba(11, 13, 16, 0.92) 22%, rgba(11, 13, 16, 0.7) 58%, rgba(11, 13, 16, 0.92)),
+    linear-gradient(180deg, rgba(11, 13, 16, 0.22), rgba(11, 13, 16, 0.82));
 }
 
 .hero__content {
@@ -134,8 +122,27 @@ const allMovies = computed(() => moviesStore.all)
   z-index: 1;
   color: white;
   padding: 80px 32px;
+}
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  gap: 32px;
+  align-items: center;
+}
+
+.hero__copy {
   display: grid;
   gap: 18px;
+}
+
+.hero__poster {
+  min-height: 440px;
+  border-radius: 24px;
+  background-color: rgba(255, 255, 255, 0.08);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.32);
 }
 
 .hero__badge {
@@ -226,11 +233,25 @@ const allMovies = computed(() => moviesStore.all)
   .hero__content {
     padding: 56px 24px;
   }
+
+  .hero__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__poster {
+    min-height: 360px;
+    max-width: 280px;
+  }
 }
 
 @media (max-width: 600px) {
   .hero__content {
     padding: 42px 16px;
+  }
+
+  .hero__poster {
+    min-height: 320px;
+    max-width: none;
   }
 
   .hero__actions {

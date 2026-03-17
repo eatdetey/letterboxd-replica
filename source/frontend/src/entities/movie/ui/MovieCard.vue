@@ -8,11 +8,7 @@ defineProps<{ movie: MovieDto; variant?: 'compact' | 'default' }>()
   <router-link class="movie-card__link" :to="{ name: 'movie', params: { id: movie.id } }">
     <v-card class="movie-card" :class="variant ? `movie-card--${variant}` : 'movie-card--default'" elevation="0">
       <div class="movie-card__poster" :style="{ backgroundImage: movie.poster_url ? `url(${movie.poster_url})` : undefined }">
-        <div class="movie-card__overlay">
-          <div class="movie-card__rating" v-if="movie.rating !== undefined">
-            {{ movie.rating.toFixed(1) }}
-          </div>
-        </div>
+        <div class="movie-card__overlay"></div>
       </div>
       <div class="movie-card__body">
         <div class="movie-card__title">{{ movie.title }}</div>
@@ -73,16 +69,6 @@ defineProps<{ movie: MovieDto; variant?: 'compact' | 'default' }>()
   align-items: flex-end;
   justify-content: flex-end;
   padding: 12px;
-}
-
-.movie-card__rating {
-  background: rgba(12, 13, 15, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f4d35e;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.85rem;
 }
 
 .movie-card__body {
