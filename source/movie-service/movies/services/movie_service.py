@@ -1,16 +1,21 @@
-from movies.repositories.movie_repository import MovieRepository
-
+from movies.models import Movie
 
 class MovieService:
 
     @staticmethod
-    def get_movie(movie_id):
-        return MovieRepository.get_movie(movie_id)
+    def get_movies(limit, offset, search_query=None, genre=None, ids=None):
+        queryset = Movie.objects.prefetch_related("genres")
 
-    @staticmethod
-    def list_movies(limit=10, offset=0):
-        return MovieRepository.list_movies(limit, offset)
+        if ids:
+            queryset = queryset.filter(id__in=ids)
+        else:
+            if search_query:
+                queryset = queryset.filter(title__icontains=search_query)
 
-    @staticmethod
-    def search_movies(query, limit=10, offset=0):
-        return MovieRepository.search_movies(query, limit, offset)
+            if genre:
+                queryset = queryset.filter(genres__name=genre)
+
+        total = queryset.count()
+        queryset = queryset[offset:offset + limit]
+
+        return queryset, total
