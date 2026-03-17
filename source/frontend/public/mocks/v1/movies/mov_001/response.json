@@ -1,0 +1,24 @@
+{
+  "id": "mov_001",
+  "title": "Neon Horizon",
+  "description": "A courier in a flooded megacity uncovers a conspiracy hidden inside a missing film reel. Racing through drowned streets, she begins to suspect the missing reel predicts the city's next blackout.",
+  "release_year": 2023,
+  "genres": ["Sci-Fi", "Thriller"],
+  "rating": 4.7,
+  "poster_url": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
+  "backdrop_url": "https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=1600&q=80",
+  "director": "Kara Volkov",
+  "cast": ["Lena Hart", "Micah Stone", "Jun Park", "Amira Sol"],
+  "runtime_minutes": 128,
+  "country": "United Kingdom",
+  "playlists": [
+    {
+      "id": "pl_123",
+      "name": "My Favorites"
+    },
+    {
+      "id": "pl_456",
+      "name": "Watch Later"
+    }
+  ]
+}

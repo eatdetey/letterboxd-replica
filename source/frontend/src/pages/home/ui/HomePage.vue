@@ -30,10 +30,17 @@ const allMovies = computed(() => moviesStore.all)
           <span class="dot">•</span>
           <span>{{ featured.genres.join(', ') }}</span>
           <span class="dot">•</span>
-          <span v-if="featured.rating">{{ featured.rating.toFixed(1) }} rating</span>
+          <span v-if="featured.rating !== undefined">{{ featured.rating.toFixed(1) }} rating</span>
         </div>
         <div class="hero__actions">
-          <v-btn color="white" variant="flat" class="hero__primary">Watch trailer</v-btn>
+          <v-btn
+            color="white"
+            variant="flat"
+            class="hero__primary"
+            :to="{ name: 'movie', params: { id: featured.id } }"
+          >
+            View details
+          </v-btn>
           <v-btn color="white" variant="outlined" class="hero__secondary">Add to watchlist</v-btn>
         </div>
       </v-container>

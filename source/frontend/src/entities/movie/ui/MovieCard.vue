@@ -5,29 +5,37 @@ defineProps<{ movie: MovieDto; variant?: 'compact' | 'default' }>()
 </script>
 
 <template>
-  <v-card class="movie-card" :class="variant ? `movie-card--${variant}` : 'movie-card--default'" elevation="0">
-    <div class="movie-card__poster" :style="{ backgroundImage: movie.poster_url ? `url(${movie.poster_url})` : undefined }">
-      <div class="movie-card__overlay">
-        <div class="movie-card__rating" v-if="movie.rating">
-          {{ movie.rating.toFixed(1) }}
+  <router-link class="movie-card__link" :to="{ name: 'movie', params: { id: movie.id } }">
+    <v-card class="movie-card" :class="variant ? `movie-card--${variant}` : 'movie-card--default'" elevation="0">
+      <div class="movie-card__poster" :style="{ backgroundImage: movie.poster_url ? `url(${movie.poster_url})` : undefined }">
+        <div class="movie-card__overlay">
+          <div class="movie-card__rating" v-if="movie.rating !== undefined">
+            {{ movie.rating.toFixed(1) }}
+          </div>
         </div>
       </div>
-    </div>
-    <div class="movie-card__body">
-      <div class="movie-card__title">{{ movie.title }}</div>
-      <div class="movie-card__meta">
-        <span>{{ movie.release_year }}</span>
-        <span class="dot">•</span>
-        <span>{{ movie.genres.join(', ') }}</span>
+      <div class="movie-card__body">
+        <div class="movie-card__title">{{ movie.title }}</div>
+        <div class="movie-card__meta">
+          <span>{{ movie.release_year }}</span>
+          <span class="dot">•</span>
+          <span>{{ movie.genres.join(', ') }}</span>
+        </div>
+        <div class="movie-card__description" v-if="variant !== 'compact'">
+          {{ movie.description }}
+        </div>
       </div>
-      <div class="movie-card__description" v-if="variant !== 'compact'">
-        {{ movie.description }}
-      </div>
-    </div>
-  </v-card>
+    </v-card>
+  </router-link>
 </template>
 
 <style scoped>
+.movie-card__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 .movie-card {
   background: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -37,6 +45,16 @@ defineProps<{ movie: MovieDto; variant?: 'compact' | 'default' }>()
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 100%;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.movie-card__link:hover .movie-card {
+  transform: translateY(-6px);
+  border-color: rgba(244, 211, 94, 0.28);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
 }
 
 .movie-card__poster {
