@@ -35,6 +35,7 @@ message GetMoviesRequest {
 message MoviesResponse {
   repeated MovieDetailedResponse items = 1;
   int32 total = 2;
+  string poster = 3;
 }
 
 message MovieDetailedResponse {
@@ -43,7 +44,8 @@ message MovieDetailedResponse {
   string description = 3;
   int32 release_year = 4;
   repeated string genres = 5;
-  
+  string poster = 6;
+
   // Заполняется только если enrich_playlists = true
   repeated PlaylistInfo playlists = 6; 
 }
@@ -59,6 +61,7 @@ message CreateMovieRequest {
   string description = 2;
   int32 release_year = 3;
   repeated string genres = 4;
+  string poster = 5;
 }
 
 message UpdateMovieRequest {
@@ -67,6 +70,7 @@ message UpdateMovieRequest {
   optional string description = 3;
   optional int32 release_year = 4;
   repeated string genres = 5;
+  string poster = 6;
 }
 
 message DeleteMovieRequest { string id = 1; }
@@ -76,6 +80,7 @@ message MovieResponse {
   string description = 3;
   int32 release_year = 4;
   repeated string genres = 5;
+  string poster = 6;
 }
 message MovieIdRequest { string id = 1; }
 message ExistsResponse { bool exists = 1; }
