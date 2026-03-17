@@ -12,8 +12,9 @@ service UserService {
 }
 
 enum Role {
-    ROLE_UNSPECIFIFED = 0;
-    ROLE_ADMIN = 1;
+    ROLE_UNSPECIFIED = 0;
+    ROLE_USER = 1;
+    ROLE_ADMIN = 2;
 }
 
 message User {
