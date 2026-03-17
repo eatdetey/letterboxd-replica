@@ -7,3 +7,14 @@ plugins:
   - name: go-grpc
     out: user-service/gen/go
     opt: [paths=source_relative]
+  
+  - name: go
+    out: api-gateway/gen/go
+    opt:
+      - paths=source_relative
+      - Muser/v1/user.proto=github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/user/v1
+  - name: go-grpc
+    out: api-gateway/gen/go
+    opt:
+      - paths=source_relative
+      - Muser/v1/user.proto=github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/user/v1

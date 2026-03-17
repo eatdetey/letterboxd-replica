@@ -67,6 +67,21 @@ services:
       - "50052:50051"
     restart: unless-stopped
 
+  api-gateway:
+    build:
+      context: ./source/api-gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - user-service
+    environment:
+      - CONFIG_PATH=/etc/api-gateway/config.yaml
+      - USER_SERVICE_ADDRESS=user-service:50051
+    volumes:
+      - ./source/configs/api-gateway/config.yaml:/etc/api-gateway/config.yaml:ro
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
 volumes:
   user-db-data:
   movie-db-data:
