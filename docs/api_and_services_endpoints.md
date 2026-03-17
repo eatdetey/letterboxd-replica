@@ -108,7 +108,8 @@ Query params:
       "title": "Inception",
       "description": "A thief who steals corporate secrets...",
       "release_year": 2010,
-      "genres": ["Sci-Fi", "Action"]
+      "genres": ["Sci-Fi", "Action"],
+      "poster_url": "string"
       // Поле playlists отсутствует, так как это список и флаг enrich был false
     },
     {
@@ -116,7 +117,8 @@ Query params:
       "title": "Inception: The IMAX Experience",
       "description": "...",
       "release_year": 2010,
-      "genres": ["Sci-Fi", "Documentary"]
+      "genres": ["Sci-Fi", "Documentary"],
+      "poster_url": "string"
     }
   ],
   "total": 2
@@ -135,6 +137,7 @@ Query params:
   "description": "A thief who steals corporate secrets...",
   "release_year": 2010,
   "genres": ["Sci-Fi", "Action"],
+  "poster_url": "string",
   "playlists": [
     {
       "id": "pl_123",
@@ -159,7 +162,8 @@ Query params:
   "title": "string",
   "description": "string",
   "release_year": 2024,
-  "genres": ["Drama"]
+  "genres": ["Drama"],
+  "poster_url": "string"
 }
 ```
 
@@ -521,4 +525,3 @@ message ReviewsResponse { repeated ReviewResponse items = 1; }
 *   **Review Service DB**:
     *   `reviews`: `id (PK), movie_id, user_id, text, created_at`
     *   *Индексы:* `movie_id` (для получения списка отзывов).
-
