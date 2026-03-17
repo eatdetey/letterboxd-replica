@@ -10,14 +10,7 @@ export const useMoviesStore = defineStore('movies', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  const featured = computed<MovieDto | null>(() => {
-    return items.value.find((movie) => movie.is_featured) || items.value[0] || null
-  })
-
-  const popular = computed<MovieDto[]>(() => {
-    const popularItems = items.value.filter((movie) => movie.is_popular)
-    return popularItems.length ? popularItems : items.value.slice(0, 6)
-  })
+  const featured = computed<MovieDto | null>(() => items.value[0] || null)
 
   const all = computed<MovieDto[]>(() => items.value)
 
@@ -41,7 +34,6 @@ export const useMoviesStore = defineStore('movies', () => {
     isLoading,
     error,
     featured,
-    popular,
     all,
     loadMovies,
   }

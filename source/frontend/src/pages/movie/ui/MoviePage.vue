@@ -54,11 +54,6 @@ watch(movieId, (id) => {
 
       <template v-else-if="movie">
         <section class="movie-hero">
-          <div
-            class="movie-hero__backdrop"
-            :style="{ backgroundImage: movie.backdrop_url ? `url(${movie.backdrop_url})` : undefined }"
-          ></div>
-
           <div class="movie-hero__grid">
             <div
               class="movie-poster"
@@ -73,32 +68,9 @@ watch(movieId, (id) => {
                 <span>{{ movie.release_year }}</span>
                 <span class="dot">•</span>
                 <span>{{ movie.genres.join(', ') }}</span>
-                <template v-if="movie.runtime_minutes">
-                  <span class="dot">•</span>
-                  <span>{{ movie.runtime_minutes }} min</span>
-                </template>
-                <template v-if="movie.rating !== undefined">
-                  <span class="dot">•</span>
-                  <span>{{ movie.rating.toFixed(1) }} rating</span>
-                </template>
               </div>
 
               <p class="movie-hero__description">{{ movie.description }}</p>
-
-              <div class="movie-hero__facts">
-                <div v-if="movie.director" class="movie-fact">
-                  <span class="movie-fact__label">Director</span>
-                  <span class="movie-fact__value">{{ movie.director }}</span>
-                </div>
-                <div v-if="movie.cast?.length" class="movie-fact">
-                  <span class="movie-fact__label">Cast</span>
-                  <span class="movie-fact__value">{{ movie.cast.join(', ') }}</span>
-                </div>
-                <div v-if="movie.country" class="movie-fact">
-                  <span class="movie-fact__label">Country</span>
-                  <span class="movie-fact__value">{{ movie.country }}</span>
-                </div>
-              </div>
 
               <div class="movie-hero__actions">
                 <v-btn color="white" variant="flat" class="movie-hero__primary">Add to watchlist</v-btn>
@@ -173,33 +145,13 @@ watch(movieId, (id) => {
 }
 
 .movie-hero {
-  position: relative;
   border-radius: 32px;
   overflow: hidden;
   background: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.movie-hero__backdrop {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: saturate(1.05);
-}
-
-.movie-hero__backdrop::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(9, 11, 14, 0.96) 22%, rgba(9, 11, 14, 0.78) 55%, rgba(9, 11, 14, 0.92)),
-    linear-gradient(180deg, rgba(9, 11, 14, 0.2), rgba(9, 11, 14, 0.8));
-}
-
 .movie-hero__grid {
-  position: relative;
-  z-index: 1;
   display: grid;
   grid-template-columns: minmax(240px, 300px) 1fr;
   gap: 32px;
@@ -248,28 +200,6 @@ watch(movieId, (id) => {
   color: var(--text-secondary);
   line-height: 1.75;
   font-size: 1.02rem;
-}
-
-.movie-hero__facts {
-  display: grid;
-  gap: 14px;
-}
-
-.movie-fact {
-  display: grid;
-  gap: 4px;
-}
-
-.movie-fact__label {
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-}
-
-.movie-fact__value {
-  color: var(--text-primary);
-  line-height: 1.6;
 }
 
 .movie-hero__actions {

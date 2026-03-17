@@ -10,27 +10,20 @@ onMounted(() => {
 })
 
 const featured = computed(() => moviesStore.featured)
-const popular = computed(() => moviesStore.popular)
 const allMovies = computed(() => moviesStore.all)
 </script>
 
 <template>
   <div class="home-page">
     <section class="hero" v-if="featured">
-      <div
-        class="hero__backdrop"
-        :style="{ backgroundImage: featured.backdrop_url ? `url(${featured.backdrop_url})` : undefined }"
-      ></div>
       <v-container class="hero__content">
-        <div class="hero__badge">Featured</div>
+        <div class="hero__badge">Now showing</div>
         <h1 class="hero__title">{{ featured.title }}</h1>
         <p class="hero__description">{{ featured.description }}</p>
         <div class="hero__meta">
           <span>{{ featured.release_year }}</span>
           <span class="dot">•</span>
           <span>{{ featured.genres.join(', ') }}</span>
-          <span class="dot">•</span>
-          <span v-if="featured.rating !== undefined">{{ featured.rating.toFixed(1) }} rating</span>
         </div>
         <div class="hero__actions">
           <v-btn
@@ -43,26 +36,6 @@ const allMovies = computed(() => moviesStore.all)
           </v-btn>
           <v-btn color="white" variant="outlined" class="hero__secondary">Add to watchlist</v-btn>
         </div>
-      </v-container>
-    </section>
-
-    <section class="section" v-if="popular.length">
-      <v-container>
-        <div class="section__header">
-          <h2 class="section__title">Popular right now</h2>
-          <v-btn variant="text" class="section__action">See all</v-btn>
-        </div>
-        <v-row>
-          <v-col
-            v-for="movie in popular"
-            :key="movie.id"
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <MovieCard :movie="movie" variant="compact" />
-          </v-col>
-        </v-row>
       </v-container>
     </section>
 
@@ -112,26 +85,10 @@ const allMovies = computed(() => moviesStore.all)
   overflow: hidden;
   margin: 24px;
   background: var(--surface);
-}
-
-.hero__backdrop {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: saturate(1.1);
-}
-
-.hero__backdrop::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, rgba(8, 10, 13, 0.92) 20%, rgba(8, 10, 13, 0.4) 70%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .hero__content {
-  position: relative;
-  z-index: 1;
   color: white;
   padding: 80px 32px;
   display: grid;
