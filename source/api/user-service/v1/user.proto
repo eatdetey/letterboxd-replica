@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "user-service/gen/go/user;user";
+
+service UserService {
+    rpc Register(RegisterRequest) returns (AuthResponse);
+    rpc Login(LoginRequest) returns (AuthResponse);
+    rpc Refresh(RefreshRequest) returns (RefreshResponse);
+    rpc GetUsersByIDs(GetUsersRequest) returns (GetUsersResponse);
+}
+
+enum Role {
+    ROLE_USER = 0;
+    ROLE_ADMIN = 1;
+}
+
+message User {
+    int64 id = 1;
+    string username = 2;
+    string email = 3;
+    string password_hash = 4;
+    string bio = 5;
+    string avatar_url = 6;
+    string status = 7;
+    Role role = 8;
+}
+
+message Tokens {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+
+message RegisterRequest {
+    string username = 1;
+    string password = 2;
+    string email = 3;
+}
+
+message AuthResponse {
+    User user = 1;
+    Tokens tokens = 2;
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message RefreshRequest {
+    string refresh_token = 1;
+}
+
+message RefreshResponse {
+    Tokens tokens = 1;
+}
+
+message GetUsersRequest {
+    repeated int64 ids = 1;
+    repeated string usernames = 2;
+    int32 limit = 3;
+    int32 offset = 4;
+}
+
+message GetUsersResponse {
+    repeated User users = 1;
+}
