@@ -24,3 +24,12 @@ export interface MoviesListResponseDto {
   items: MovieDto[]
   total: number
 }
+
+// TODO
+export interface MovieDetailsDto extends MovieDto {
+  playlists: PlaylistDto[]
+  director?: string
+  cast?: string[]
+  runtime_minutes?: number
+  country?: string
+}
