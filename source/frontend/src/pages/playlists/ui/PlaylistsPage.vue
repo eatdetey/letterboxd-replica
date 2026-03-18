@@ -97,7 +97,7 @@ const totalMovies = computed(() => playlistsStore.totalMovies)
   inset: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .playlists-hero__backdrop::after {
@@ -161,7 +161,8 @@ const totalMovies = computed(() => playlistsStore.totalMovies)
 
 .playlists-section__title {
   margin: 0;
-  color: var(--text-primary);
+  color: var(--text-text);
+  opacity: 1;
   font-size: 1.6rem;
 }
 
