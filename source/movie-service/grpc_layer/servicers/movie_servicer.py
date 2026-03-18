@@ -6,6 +6,7 @@ from django.db import transaction
 
 from movies.models import Genre, Movie
 from movies.services.movie_service import MovieService
+from grpc_layer.context_utils import get_claims_from_context
 from grpc_layer.protobuf.movie.v1 import movie_pb2, movie_pb2_grpc
 
 
@@ -89,6 +90,7 @@ class MovieServiceHandler(movie_pb2_grpc.MovieServiceServicer):
         )
 
     def CreateMovie(self, request, context):
+        self._require_admin(context)
         if request.release_year <= 0:
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, "release_year must be positive")
 
@@ -107,6 +109,7 @@ class MovieServiceHandler(movie_pb2_grpc.MovieServiceServicer):
         return movie_pb2.CreateMovieResponse(movie=_movie_to_proto(movie))
 
     def UpdateMovie(self, request, context):
+        self._require_admin(context)
         movie = self._get_movie_or_abort(request.id, context)
 
         if request.HasField("title"):
@@ -130,6 +133,7 @@ class MovieServiceHandler(movie_pb2_grpc.MovieServiceServicer):
         return movie_pb2.UpdateMovieResponse(movie=_movie_to_proto(movie))
 
     def DeleteMovie(self, request, context):
+        self._require_admin(context)
         movie = self._get_movie_or_abort(request.id, context)
         movie.delete()
         return movie_pb2.DeleteMovieResponse()
@@ -143,3 +147,11 @@ class MovieServiceHandler(movie_pb2_grpc.MovieServiceServicer):
             return Movie.objects.get(id=movie_id)
         except Movie.DoesNotExist:
             context.abort(grpc.StatusCode.NOT_FOUND, "movie not found")
+
+    def _require_admin(self, context):
+        claims = get_claims_from_context(context)
+        if not claims:
+            context.abort(grpc.StatusCode.UNAUTHENTICATED, "authorization required")
+        roles = [role.lower() for role in (claims.roles or [])]
+        if "admin" not in roles:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "admin role required")

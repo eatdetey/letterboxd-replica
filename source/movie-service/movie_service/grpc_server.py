@@ -8,11 +8,28 @@ django.setup()
 
 from grpc_layer.servicers.movie_servicer import MovieServiceHandler
 from grpc_layer.protobuf.movie.v1 import movie_pb2_grpc
+from grpc_layer.interceptors import RequestIdInterceptor, AuthInterceptor
 
 
 def serve():
     port = os.environ.get("MOVIE_SERVICE_PORT", "50051")
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    access_secret = os.environ.get("AUTH_ACCESS_SECRET")
+
+    if not access_secret:
+        raise RuntimeError("AUTH_ACCESS_SECRET env variable is required to start movie-service")
+
+    protected_methods = {
+        "/movie.v1.MovieService/CreateMovie",
+        "/movie.v1.MovieService/UpdateMovie",
+        "/movie.v1.MovieService/DeleteMovie",
+    }
+
+    interceptors = [
+        RequestIdInterceptor(),
+        AuthInterceptor(access_secret, protected_methods),
+    ]
+
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), interceptors=interceptors)
 
     movie_pb2_grpc.add_MovieServiceServicer_to_server(
         MovieServiceHandler(),
