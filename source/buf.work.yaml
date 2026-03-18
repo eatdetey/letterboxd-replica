@@ -4,5 +4,6 @@ version: v1
 
 directories:
   - api/user-service
+  - api/movie-service
   - third-party/googleapis
   - third-party/grpc-gateway
