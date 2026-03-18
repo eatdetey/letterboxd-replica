@@ -34,6 +34,38 @@ services:
     ports:
       - "50051:50051"
     restart: unless-stopped
+  
+  movie-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - movie-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  movie-service:
+    build:
+      context: ./source/movie-service
+      dockerfile: Dockerfile
+    depends_on:
+      movie-db:
+        condition: service_healthy
+    environment:
+      - DJANGO_SETTINGS_MODULE=movie_service.settings
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-db:5432/postgres?sslmode=disable
+      - MOVIE_SERVICE_PORT=50051
+    ports:
+      - "50052:50051"
+    restart: unless-stopped
 
 volumes:
   user-db-data:
+  movie-db-data:

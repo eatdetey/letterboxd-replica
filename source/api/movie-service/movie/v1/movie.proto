@@ -9,7 +9,6 @@ service MovieService {
   rpc CreateMovie(CreateMovieRequest) returns (CreateMovieResponse);
   rpc UpdateMovie(UpdateMovieRequest) returns (UpdateMovieResponse);
   rpc DeleteMovie(DeleteMovieRequest) returns (DeleteMovieResponse);
-  rpc MovieExists(MovieExistsRequest) returns (MovieExistsResponse);
 }
 
 message GetMoviesRequest {
@@ -26,7 +25,6 @@ message GetMoviesRequest {
 message GetMoviesResponse {
   repeated MovieDetailed items = 1;
   int32 total = 2;
-  string poster = 3;
 }
 
 message MovieDetailed {
@@ -82,12 +80,4 @@ message Movie {
   int32 release_year = 4;
   repeated string genres = 5;
   string poster = 6;
-}
-
-message MovieExistsRequest {
-  string id = 1;
-}
-
-message MovieExistsResponse {
-  bool exists = 1;
 }

@@ -54,11 +54,6 @@ class MovieServiceStub(object):
                 request_serializer=movie_dot_v1_dot_movie__pb2.DeleteMovieRequest.SerializeToString,
                 response_deserializer=movie_dot_v1_dot_movie__pb2.DeleteMovieResponse.FromString,
                 _registered_method=True)
-        self.MovieExists = channel.unary_unary(
-                '/movie.v1.MovieService/MovieExists',
-                request_serializer=movie_dot_v1_dot_movie__pb2.MovieExistsRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.MovieExistsResponse.FromString,
-                _registered_method=True)
 
 
 class MovieServiceServicer(object):
@@ -88,12 +83,6 @@ class MovieServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def MovieExists(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_MovieServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -116,11 +105,6 @@ def add_MovieServiceServicer_to_server(servicer, server):
                     servicer.DeleteMovie,
                     request_deserializer=movie_dot_v1_dot_movie__pb2.DeleteMovieRequest.FromString,
                     response_serializer=movie_dot_v1_dot_movie__pb2.DeleteMovieResponse.SerializeToString,
-            ),
-            'MovieExists': grpc.unary_unary_rpc_method_handler(
-                    servicer.MovieExists,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.MovieExistsRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.MovieExistsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -231,33 +215,6 @@ class MovieService(object):
             '/movie.v1.MovieService/DeleteMovie',
             movie_dot_v1_dot_movie__pb2.DeleteMovieRequest.SerializeToString,
             movie_dot_v1_dot_movie__pb2.DeleteMovieResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def MovieExists(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/movie.v1.MovieService/MovieExists',
-            movie_dot_v1_dot_movie__pb2.MovieExistsRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.MovieExistsResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -17,7 +17,9 @@ class Movie(models.Model):
     poster = models.CharField(max_length=150, null=True)
 
     def __str__(self):
-        return f"{self.title} ({self.release_date.year})"
+        if self.release_date:
+            return f"{self.title} ({self.release_date.year})"
+        return self.title
 
 
 class Person(models.Model):

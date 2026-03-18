@@ -11,6 +11,7 @@ from grpc_layer.protobuf.movie.v1 import movie_pb2_grpc
 
 
 def serve():
+    port = os.environ.get("MOVIE_SERVICE_PORT", "50051")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     movie_pb2_grpc.add_MovieServiceServicer_to_server(
@@ -18,9 +19,9 @@ def serve():
         server
     )
 
-    server.add_insecure_port('0.0.0.0:50051')
+    server.add_insecure_port(f'0.0.0.0:{port}')
     server.start()
-    print("gRPC server running on 0.0.0.0:50051")
+    print(f"gRPC server running on 0.0.0.0:{port}")
     server.wait_for_termination()
 
 
