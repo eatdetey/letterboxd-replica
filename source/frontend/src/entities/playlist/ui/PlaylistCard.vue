@@ -10,17 +10,25 @@ const movieLabel = computed(() => {
 </script>
 
 <template>
-  <v-card class="playlist-card" elevation="0">
-    <div class="playlist-card__eyebrow">User list</div>
-    <h3 class="playlist-card__title">{{ playlist.name }}</h3>
-    <p class="playlist-card__meta">
-      {{ playlist.movies_count }} {{ movieLabel }}
-    </p>
-    <v-btn variant="text" class="playlist-card__action">Open list</v-btn>
-  </v-card>
+  <router-link class="playlist-card__link" :to="{ name: 'playlist', params: { id: playlist.id } }">
+    <v-card class="playlist-card" elevation="0">
+      <div class="playlist-card__eyebrow">User list</div>
+      <h3 class="playlist-card__title">{{ playlist.name }}</h3>
+      <p class="playlist-card__meta">
+        {{ playlist.movies_count }} {{ movieLabel }}
+      </p>
+      <v-btn variant="text" class="playlist-card__action">Open list</v-btn>
+    </v-card>
+  </router-link>
 </template>
 
 <style scoped>
+.playlist-card__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 .playlist-card {
   background:
     linear-gradient(180deg, rgba(18, 20, 24, 0.96), rgba(18, 20, 24, 0.9)),
@@ -32,6 +40,16 @@ const movieLabel = computed(() => {
   display: grid;
   gap: 12px;
   min-height: 100%;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.playlist-card__link:hover .playlist-card {
+  transform: translateY(-6px);
+  border-color: rgba(244, 211, 94, 0.22);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
 }
 
 .playlist-card__eyebrow {

@@ -1,0 +1,45 @@
+{
+  "items": [
+    {
+      "id": "mov_001",
+      "title": "Neon Horizon",
+      "description": "A courier in a flooded megacity uncovers a conspiracy hidden inside a missing film reel.",
+      "release_year": 2023,
+      "genres": ["Sci-Fi", "Thriller"],
+      "poster_url": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_003",
+      "title": "Midnight Harvest",
+      "description": "A remote farming commune confronts a string of haunting messages from the future.",
+      "release_year": 2022,
+      "genres": ["Mystery", "Horror"],
+      "poster_url": "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_006",
+      "title": "Paper Moons",
+      "description": "An archivist maps forgotten love letters across a city on the edge of blackout.",
+      "release_year": 2024,
+      "genres": ["Romance", "Drama"],
+      "poster_url": "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_007",
+      "title": "Signal in the Deep",
+      "description": "A research crew receives a signal from beneath the ocean floor after decades of silence.",
+      "release_year": 2022,
+      "genres": ["Sci-Fi", "Adventure"],
+      "poster_url": "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_008",
+      "title": "The Last Projectionist",
+      "description": "A retiring projectionist curates a final night of cinema that rewrites his past.",
+      "release_year": 2018,
+      "genres": ["Drama"],
+      "poster_url": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80"
+    }
+  ],
+  "total": 5
+}
