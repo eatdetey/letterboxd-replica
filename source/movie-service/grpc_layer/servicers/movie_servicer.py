@@ -1,105 +1,157 @@
+from datetime import date
+from typing import Iterable, List, Optional
+
 import grpc
-from datetime import datetime
+from django.db import transaction
 
-from movies.models import Movie, Genre
+from movies.models import Genre, Movie
 from movies.services.movie_service import MovieService
+from grpc_layer.context_utils import get_claims_from_context
+from grpc_layer.protobuf.movie.v1 import movie_pb2, movie_pb2_grpc
 
-from grpc_layer.protobuf import movie_pb2, movie_pb2_grpc
+
+def _parse_int(value: str) -> Optional[int]:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _movie_to_detailed(movie: Movie) -> movie_pb2.MovieDetailed:
+    release_year = movie.release_date.year if movie.release_date else 0
+    genres = [genre.name for genre in movie.genres.all()]
+    # playlists are not stored yet; return an empty list to keep contract stable
+    return movie_pb2.MovieDetailed(
+        id=str(movie.id),
+        title=movie.title,
+        description=movie.description or "",
+        release_year=release_year,
+        genres=genres,
+        poster=movie.poster or "",
+        playlists=[],
+    )
+
+
+def _movie_to_proto(movie: Movie) -> movie_pb2.Movie:
+    release_year = movie.release_date.year if movie.release_date else 0
+    genres = [genre.name for genre in movie.genres.all()]
+    return movie_pb2.Movie(
+        id=str(movie.id),
+        title=movie.title,
+        description=movie.description or "",
+        release_year=release_year,
+        genres=genres,
+        poster=movie.poster or "",
+    )
+
+
+def _get_genres_by_names(names: Iterable[str]) -> List[Genre]:
+    genres: List[Genre] = []
+    for name in names:
+        genre_obj, _ = Genre.objects.get_or_create(name=name)
+        genres.append(genre_obj)
+    return genres
 
 
 class MovieServiceHandler(movie_pb2_grpc.MovieServiceServicer):
+    DEFAULT_LIMIT = 20
 
     def GetMovies(self, request, context):
-        movies, total = MovieService.get_movies(
-            limit=request.limit,
-            offset=request.offset,
-            search_query=request.search_query if request.HasField("search_query") else None,
-            genre=request.genre if request.HasField("genre") else None,
-            ids=list(request.ids)
+        limit = request.limit or self.DEFAULT_LIMIT
+        offset = max(request.offset, 0)
+
+        if limit <= 0:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "limit must be positive")
+
+        ids: Optional[List[int]] = None
+        if request.ids:
+            ids = []
+            for raw_id in request.ids:
+                parsed = _parse_int(raw_id)
+                if parsed is None:
+                    context.abort(grpc.StatusCode.INVALID_ARGUMENT, "ids must be integers")
+                ids.append(parsed)
+
+        search_query = request.search_query if request.HasField("search_query") else None
+        genre = request.genre if request.HasField("genre") else None
+
+        queryset, total = MovieService.get_movies(
+            limit=limit,
+            offset=offset,
+            search_query=search_query,
+            genre=genre,
+            ids=ids,
         )
 
-        return movie_pb2.MoviesResponse(
-            items=[self._to_movie_detailed(m, request.enrich_playlists, request.user_id) for m in movies],
-            total=total
+        items = [_movie_to_detailed(movie) for movie in queryset]
+        return movie_pb2.GetMoviesResponse(
+            items=items,
+            total=total,
         )
-
 
     def CreateMovie(self, request, context):
-        movie = Movie.objects.create(
-            title=request.title,
-            description=request.description,
-            release_date=datetime(request.release_year, 1, 1)
-        )
+        self._require_admin(context)
+        if request.release_year <= 0:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "release_year must be positive")
 
-        genres = Genre.objects.filter(name__in=request.genres)
-        movie.genres.set(genres)
+        with transaction.atomic():
+            movie = Movie.objects.create(
+                title=request.title,
+                original_title=request.title,
+                description=request.description or "",
+                release_date=date(request.release_year, 1, 1),
+                poster=request.poster or "",
+            )
 
-        return self._to_movie_response(movie)
+            if request.genres:
+                movie.genres.set(_get_genres_by_names(request.genres))
 
+        return movie_pb2.CreateMovieResponse(movie=_movie_to_proto(movie))
 
     def UpdateMovie(self, request, context):
-        try:
-            movie = Movie.objects.get(id=request.id)
-        except Movie.DoesNotExist:
-            context.abort(grpc.StatusCode.NOT_FOUND, "Movie not found")
+        self._require_admin(context)
+        movie = self._get_movie_or_abort(request.id, context)
 
         if request.HasField("title"):
             movie.title = request.title
-
         if request.HasField("description"):
-            movie.description = request.description
-
+            movie.description = request.description or ""
         if request.HasField("release_year"):
-            movie.release_date = datetime(request.release_year, 1, 1)
+            if request.release_year <= 0:
+                context.abort(grpc.StatusCode.INVALID_ARGUMENT, "release_year must be positive")
+            movie.release_date = date(request.release_year, 1, 1)
 
+        # Proto3 repeated fields are always present; update only when provided content exists
         if request.genres:
-            genres = Genre.objects.filter(name__in=request.genres)
-            movie.genres.set(genres)
+            movie.genres.set(_get_genres_by_names(request.genres))
+
+        if request.poster:
+            movie.poster = request.poster
 
         movie.save()
 
-        return self._to_movie_response(movie)
-
+        return movie_pb2.UpdateMovieResponse(movie=_movie_to_proto(movie))
 
     def DeleteMovie(self, request, context):
-        deleted, _ = Movie.objects.filter(id=request.id).delete()
+        self._require_admin(context)
+        movie = self._get_movie_or_abort(request.id, context)
+        movie.delete()
+        return movie_pb2.DeleteMovieResponse()
 
-        if deleted == 0:
-            context.abort(grpc.StatusCode.NOT_FOUND, "Movie not found")
+    def _get_movie_or_abort(self, raw_id: str, context) -> Movie:
+        movie_id = _parse_int(raw_id)
+        if movie_id is None:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "id must be an integer")
 
-        return movie_pb2.Empty()
+        try:
+            return Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            context.abort(grpc.StatusCode.NOT_FOUND, "movie not found")
 
-
-    def MovieExists(self, request, context):
-        exists = Movie.objects.filter(id=request.id).exists()
-        return movie_pb2.ExistsResponse(exists=exists)
-
-
-    def _to_movie_response(self, movie):
-        return movie_pb2.MovieResponse(
-            id=str(movie.id),
-            title=movie.title,
-            description=movie.description or "",
-            release_year=movie.release_date.year if movie.release_date else 0,
-            genres=[g.name for g in movie.genres.all()]
-        )
-
-
-    def _to_movie_detailed(self, movie, enrich_playlists, user_id):
-        playlists = []
-
-        if enrich_playlists:
-            playlists = self._get_playlists_stub(movie.id, user_id)
-
-        return movie_pb2.MovieDetailedResponse(
-            id=str(movie.id),
-            title=movie.title,
-            description=movie.description or "",
-            release_year=movie.release_date.year if movie.release_date else 0,
-            genres=[g.name for g in movie.genres.all()],
-            playlists=playlists
-        )
-
-
-    def _get_playlists_stub(self, movie_id, user_id):
-        return []
+    def _require_admin(self, context):
+        claims = get_claims_from_context(context)
+        if not claims:
+            context.abort(grpc.StatusCode.UNAUTHENTICATED, "authorization required")
+        roles = [role.lower() for role in (claims.roles or [])]
+        if "admin" not in roles:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "admin role required")

@@ -1,0 +1,7 @@
+version: v1
+
+plugins:
+  - name: python
+    out: movie-service/grpc_layer/protobuf
+  - name: grpc_python
+    out: movie-service/grpc_layer/protobuf
