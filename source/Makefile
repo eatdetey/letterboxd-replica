@@ -3,7 +3,7 @@ GIT ?= git
 
 # Список сервисов для генерации/линта.
 # Записывать через пробел
-SERVICES := user-service
+SERVICES := user-service movie-list-service
 
 SERVICE_DIRS := $(addprefix api/,$(SERVICES))
 

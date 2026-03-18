@@ -1,0 +1,9 @@
+version: v1
+
+plugins:
+  - name: go
+    out: movie-list-service/gen/go
+    opt: [paths=source_relative]
+  - name: go-grpc
+    out: movie-list-service/gen/go
+    opt: [paths=source_relative]

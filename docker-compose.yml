@@ -35,5 +35,38 @@ services:
       - "50051:50051"
     restart: unless-stopped
 
+  movie-list-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - movie-list-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  movie-list-service:
+    build:
+      context: ./source/movie-list-service
+      dockerfile: Dockerfile
+    depends_on:
+      movie-list-db:
+        condition: service_healthy
+    environment:
+      - CONFIG_PATH=/etc/movie-list-service/config.yaml
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-list-db:5432/postgres?sslmode=disable
+    volumes:
+      - ./source/configs/movie-list-service/config.yaml:/etc/movie-list-service/config.yaml:ro
+    ports:
+      - "50052:50052"
+    restart: unless-stopped
+
 volumes:
   user-db-data:
+  movie-list-db-data:
