@@ -7,7 +7,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movie_service.settings")
 django.setup()
 
 from grpc_layer.servicers.movie_servicer import MovieServiceHandler
-from grpc_layer.protobuf import movie_pb2_grpc
+from grpc_layer.protobuf.movie.v1 import movie_pb2_grpc
 
 
 def serve():
