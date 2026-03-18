@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        
+
     ]
 
     operations = [
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Отзыв',
                 'verbose_name_plural': 'Отзывы',
-                'ordering': ['-created_at'], 
+                'ordering': ['-created_at'],
             },
         ),
     ]

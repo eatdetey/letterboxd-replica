@@ -7,11 +7,14 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN mkdir -p grpc_layer/protobuf && \
+    touch grpc_layer/protobuf/__init__.py && \
     python -m grpc_tools.protoc \
         -I=proto \
         --python_out=grpc_layer/protobuf \
         --grpc_python_out=grpc_layer/protobuf \
-        proto/review.proto
+        proto/review.proto \
+        proto/user.proto \
+        proto/movie.proto
 
 ENV DJANGO_SETTINGS_MODULE=review_service.settings
 ENV PYTHONPATH=/app:/app/grpc_layer/protobuf
