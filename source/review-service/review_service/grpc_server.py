@@ -9,19 +9,33 @@ django.setup()
 
 from grpc_layer.servicers.review_servicer import ReviewServiceHandler
 from grpc_layer.protobuf import review_pb2_grpc
+from grpc_layer.interceptors import RequestIdInterceptor, AuthInterceptor
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    port = os.environ.get("REVIEW_SERVICE_PORT", "50051")
+    access_secret = os.environ.get("AUTH_ACCESS_SECRET")
+    
+    if not access_secret:
+        raise RuntimeError("AUTH_ACCESS_SECRET env variable is required to start movie-service")
+
+    protected_methods = {}
+
+    interceptors = [
+        RequestIdInterceptor(),
+        AuthInterceptor(access_secret, protected_methods)
+    ]
+
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), interceptors=interceptors)
 
     review_pb2_grpc.add_ReviewServiceServicer_to_server(
         ReviewServiceHandler(),
         server
     )
 
-    server.add_insecure_port('0.0.0.0:50051')
+    server.add_insecure_port(f'0.0.0.0:{port}')
     server.start()
-    print("Review gRPC server running on 0.0.0.0:50051")
+    print(f"Review gRPC server running on 0.0.0.0:{port}")
     server.wait_for_termination()
 
 

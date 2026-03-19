@@ -97,7 +97,40 @@ services:
       - "50052:50052"
     restart: unless-stopped
 
+  review-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - review-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  review-service:
+    build:
+      context: ./source/review-service
+      dockerfile: Dockerfile
+    depends_on:
+      movie-list-db:
+        condition: service_healthy
+    environment:
+      - CONFIG_PATH=/etc/review-service/config.yaml
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@review-db:5432/postgres?sslmode=disable
+    volumes:
+      - ./source/configs/review-service/config.yaml:/etc/review-service/config.yaml:ro
+    ports:
+      - "50054:50054"
+    restart: unless-stopped
+
 volumes:
   user-db-data:
   movie-db-data:
   movie-list-db-data:
+  review-service:

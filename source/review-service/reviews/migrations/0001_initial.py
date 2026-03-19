@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('movie_id', models.CharField(max_length=255, verbose_name='ID фильма')),
                 ('user_id', models.CharField(max_length=255, verbose_name='ID пользователя')),
-                ('text', models.TextField(verbose_name='Текст отзыва')),
+                ('text', models.CharField(max_length=1000, verbose_name='Текст отзыва')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
             ],
             options={

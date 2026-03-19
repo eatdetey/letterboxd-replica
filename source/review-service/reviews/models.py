@@ -10,7 +10,8 @@ class Review(models.Model):
         max_length=255,
         verbose_name='ID пользователя'
     )
-    text = models.TextField(
+    text = models.CharField(
+        max_length=1000,
         verbose_name='Текст отзыва'
     )
     created_at = models.DateTimeField(

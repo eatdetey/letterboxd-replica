@@ -57,12 +57,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'movie_service.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 db_url = os.environ.get("DB_CONNECTION_STRING")
 
 if db_url:
