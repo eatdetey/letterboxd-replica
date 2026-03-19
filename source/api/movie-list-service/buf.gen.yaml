@@ -1,0 +1,13 @@
+version: v1
+
+plugins:
+  - name: go
+    out: movie-list-service/gen/go
+    opt:
+      - paths=source_relative
+      - Mmovielist/v1/movielist.proto=github.com/eatdetey/letterboxd-replica/source/movie-list-service/gen/go/movielist/v1
+  - name: go-grpc
+    out: movie-list-service/gen/go
+    opt:
+      - paths=source_relative
+      - Mmovielist/v1/movielist.proto=github.com/eatdetey/letterboxd-replica/source/movie-list-service/gen/go/movielist/v1

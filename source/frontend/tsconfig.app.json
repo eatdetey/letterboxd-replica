@@ -5,7 +5,9 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["src/*"],
+      "@shared/*": ["src/shared/*"],
+      "~/features/*": ["src/features/*"]
     },
 
     /* Linting */

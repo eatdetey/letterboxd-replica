@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+package movie.v1;
+
+option go_package = "movie-service/gen/go/movie;movie";
+
+service MovieService {
+  rpc GetMovies(GetMoviesRequest) returns (GetMoviesResponse);
+  rpc GetPlaylistsForUser(GetPlaylistsForUserRequest) returns (GetPlaylistsForUserResponse);
+  rpc CreatePlaylist(CreatePlaylistRequest) returns (CreatePlaylistResponse);
+  rpc RenamePlaylist(RenamePlaylistRequest) returns (RenamePlaylistResponse);
+  rpc DeletePlaylist(DeletePlaylistRequest) returns (DeletePlaylistResponse);
+  rpc AddMovieToPlaylist(AddMovieToPlaylistRequest) returns (AddMovieToPlaylistResponse);
+  rpc RemoveMovieFromPlaylist(RemoveMovieFromPlaylistRequest) returns (RemoveMovieFromPlaylistResponse);
+  rpc CreateMovie(CreateMovieRequest) returns (CreateMovieResponse);
+  rpc UpdateMovie(UpdateMovieRequest) returns (UpdateMovieResponse);
+  rpc DeleteMovie(DeleteMovieRequest) returns (DeleteMovieResponse);
+}
+
+message GetMoviesRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  optional string search_query = 3;
+  optional string genre = 4;
+  repeated string ids = 5;
+  optional string playlist_id = 6;
+  string user_id = 7;
+  bool enrich_playlists = 8;
+}
+
+message GetMoviesResponse {
+  repeated MovieDetailed items = 1;
+  int32 total = 2;
+}
+
+message MovieDetailed {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int32 release_year = 4;
+  repeated string genres = 5;
+  string poster = 6;
+  repeated PlaylistInfo playlists = 7;
+}
+
+message PlaylistInfo {
+  string id = 1;
+  string name = 2;
+}
+
+message Playlist {
+  string id = 1;
+  string name = 2;
+  int32 movies_count = 3;
+}
+
+message GetPlaylistsForUserRequest {}
+
+message GetPlaylistsForUserResponse {
+  repeated Playlist items = 1;
+}
+
+message CreatePlaylistRequest {
+  string name = 1;
+}
+
+message CreatePlaylistResponse {
+  Playlist playlist = 1;
+}
+
+message RenamePlaylistRequest {
+  string playlist_id = 1;
+  string new_name = 2;
+}
+
+message RenamePlaylistResponse {
+  Playlist playlist = 1;
+}
+
+message DeletePlaylistRequest {
+  string playlist_id = 1;
+}
+
+message DeletePlaylistResponse {}
+
+message AddMovieToPlaylistRequest {
+  string playlist_id = 1;
+  string movie_id = 2;
+}
+
+message AddMovieToPlaylistResponse {}
+
+message RemoveMovieFromPlaylistRequest {
+  string playlist_id = 1;
+  string movie_id = 2;
+}
+
+message RemoveMovieFromPlaylistResponse {}
+
+message CreateMovieRequest {
+  string title = 1;
+  string description = 2;
+  int32 release_year = 3;
+  repeated string genres = 4;
+  string poster = 5;
+}
+
+message CreateMovieResponse {
+  Movie movie = 1;
+}
+
+message UpdateMovieRequest {
+  string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional int32 release_year = 4;
+  repeated string genres = 5;
+  string poster = 6;
+}
+
+message UpdateMovieResponse {
+  Movie movie = 1;
+}
+
+message DeleteMovieRequest {
+  string id = 1;
+}
+
+message DeleteMovieResponse {}
+
+message Movie {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int32 release_year = 4;
+  repeated string genres = 5;
+  string poster = 6;
+}

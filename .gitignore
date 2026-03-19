@@ -32,3 +32,7 @@ lerna-debug.log*
 third-party
 
 .env
+__pycache__/
+*venv*/
+
+protoc-gen-grpc_python

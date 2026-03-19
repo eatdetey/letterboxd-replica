@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "id": "pl_123",
+      "name": "My Favorites",
+      "movies_count": 5
+    },
+    {
+      "id": "pl_456",
+      "name": "Watch Later",
+      "movies_count": 12
+    },
+    {
+      "id": "pl_789",
+      "name": "Weekend Rewatch",
+      "movies_count": 4
+    },
+    {
+      "id": "pl_101",
+      "name": "Late Night Sci-Fi",
+      "movies_count": 7
+    },
+    {
+      "id": "pl_202",
+      "name": "Comfort Films",
+      "movies_count": 9
+    },
+    {
+      "id": "pl_303",
+      "name": "Directors to Revisit",
+      "movies_count": 6
+    }
+  ]
+}

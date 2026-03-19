@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "rev_001",
+      "user_id": "usr_555",
+      "username": "john_doe",
+      "text": "Great movie. The production design sells the flooded megacity immediately, and the final act manages to stay tense without collapsing into noise.",
+      "created_at": "2024-09-10T12:00:00Z"
+    },
+    {
+      "id": "rev_002",
+      "user_id": "usr_991",
+      "username": "filmgrain",
+      "text": "The film looks expensive in the best way. Not every plot beat lands, but the central mystery and the sense of scale carry it through.",
+      "created_at": "2024-10-02T09:30:00Z"
+    },
+    {
+      "id": "rev_003",
+      "user_id": "usr_114",
+      "username": "noiratlas",
+      "text": "Strong lead performance, sharp pacing, and just enough emotional weight to make the conspiracy angle matter.",
+      "created_at": "2024-11-18T18:45:00Z"
+    }
+  ]
+}

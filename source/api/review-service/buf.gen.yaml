@@ -1,0 +1,13 @@
+version: v1
+
+plugins:
+  - name: go
+    out: api-gateway/gen/go
+    opt:
+      - paths=source_relative
+      - Mreview/v1/review.proto=github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/review/v1
+  - name: go-grpc
+    out: api-gateway/gen/go
+    opt:
+      - paths=source_relative
+      - Mreview/v1/review.proto=github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/review/v1

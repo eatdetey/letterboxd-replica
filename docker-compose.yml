@@ -1,0 +1,152 @@
+services:
+  user-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./source/user-service
+      dockerfile: Dockerfile
+    depends_on:
+      user-db:
+        condition: service_healthy
+    environment:
+      - CONFIG_PATH=/etc/user-service/config.yaml
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
+      - AUTH_REFRESH_SECRET=${REFRESH_SECRET:-default_refresh_secret}
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@user-db:5432/postgres?sslmode=disable
+    volumes:
+      - ./source/configs/user-service/config.yaml:/etc/user-service/config.yaml:ro
+    ports:
+      - "50051:50051"
+    restart: unless-stopped
+
+  movie-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - movie-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  movie-service:
+    build:
+      context: ./source/movie-service
+      dockerfile: Dockerfile
+    depends_on:
+      movie-db:
+        condition: service_healthy
+    environment:
+      - DJANGO_SETTINGS_MODULE=movie_service.settings
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-db:5432/postgres?sslmode=disable
+      - MOVIE_SERVICE_PORT=50053
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
+    ports:
+      - "50053:50053"
+    restart: unless-stopped
+
+  movie-list-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - movie-list-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  movie-list-service:
+    build:
+      context: ./source/movie-list-service
+      dockerfile: Dockerfile
+    depends_on:
+      movie-list-db:
+        condition: service_healthy
+    environment:
+      - CONFIG_PATH=/etc/movie-list-service/config.yaml
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-list-db:5432/postgres?sslmode=disable
+    volumes:
+      - ./source/configs/movie-list-service/config.yaml:/etc/movie-list-service/config.yaml:ro
+    ports:
+      - "50052:50052"
+    restart: unless-stopped
+
+  review-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - review-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  review-service:
+    build:
+      context: ./source/review-service
+      dockerfile: Dockerfile
+    depends_on:
+      movie-list-db:
+        condition: service_healthy
+    environment:
+      - CONFIG_PATH=/etc/review-service/config.yaml
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@review-db:5432/postgres?sslmode=disable
+    volumes:
+      - ./source/configs/review-service/config.yaml:/etc/review-service/config.yaml:ro
+    ports:
+      - "50054:50054"
+
+  api-gateway:
+    build:
+      context: ./source/api-gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - user-service
+      - movie-service
+    environment:
+      - CONFIG_PATH=/etc/api-gateway/config.yaml
+      - USER_SERVICE_ADDRESS=user-service:50051
+      - MOVIE_SERVICE_ADDRESS=movie-service:50051
+    volumes:
+      - ./source/configs/api-gateway/config.yaml:/etc/api-gateway/config.yaml:ro
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  user-db-data:
+  movie-db-data:
+  movie-list-db-data:
+  review-db-data:

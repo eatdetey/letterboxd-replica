@@ -1,0 +1,33 @@
+syntax = "proto3";
+package review.v1;
+
+option go_package = "review-service/gen/go/review;review";
+
+service ReviewService {
+  rpc GetReviews (GetReviewsRequest) returns (GetReviewsResponse);
+  rpc AddReview (AddReviewRequest) returns (AddReviewResponse);
+}
+
+message GetReviewsRequest { string movie_id = 1; }
+
+message AddReviewRequest {
+  string movie_id = 1;
+  string text = 2;
+}
+
+message Review {
+  string id = 1;
+  string movie_id = 2;
+  string user_id = 3;
+  string username = 4;
+  string text = 5;
+  string created_at = 6;
+}
+
+message GetReviewsResponse {
+  repeated Review items = 1;
+}
+
+message AddReviewResponse {
+  Review review = 1;
+}

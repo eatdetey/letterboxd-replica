@@ -1,0 +1,29 @@
+{
+  "items": [
+    {
+      "id": "mov_002",
+      "title": "Salt & Mercury",
+      "description": "Two sisters sail across a fractured archipelago to rebuild their family's lighthouse.",
+      "release_year": 2021,
+      "genres": ["Drama", "Adventure"],
+      "poster_url": "https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_004",
+      "title": "Glass Orchestra",
+      "description": "A prodigy composer tries to salvage a symphony and her sanity in a glass city.",
+      "release_year": 2020,
+      "genres": ["Drama", "Music"],
+      "poster_url": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": "mov_005",
+      "title": "Blue Ember",
+      "description": "A firefighter investigates a series of impossible cold fires sweeping the coast.",
+      "release_year": 2019,
+      "genres": ["Action", "Mystery"],
+      "poster_url": "https://images.unsplash.com/photo-1517602302552-471fe67acf66?auto=format&fit=crop&w=800&q=80"
+    }
+  ],
+  "total": 3
+}

@@ -1,22 +1,31 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Authorization from "~/features/Authorization/Authorization.vue";
 
 const routes = [
-    {
-        path: '/authorization',
-        name: 'authorization',
-        component: Authorization,
-    },
-    {
-        path: '/',
-        name: 'home',
-        component:() => import('~/features/Home/Home.vue')
-    }
+  {
+    path: '/',
+    name: 'home',
+    component: () => import('~/pages/home/ui/HomePage.vue'),
+  },
+  {
+    path: '/movies/:id',
+    name: 'movie',
+    component: () => import('~/pages/movie/ui/MoviePage.vue'),
+  },
+  {
+    path: '/playlists',
+    name: 'playlists',
+    component: () => import('~/pages/playlists/ui/PlaylistsPage.vue'),
+  },
+  {
+    path: '/playlists/:id',
+    name: 'playlist',
+    component: () => import('~/pages/playlist/ui/PlaylistPage.vue'),
+  },
 ]
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes
+  history: createWebHistory(),
+  routes,
 })
 
 export default router
