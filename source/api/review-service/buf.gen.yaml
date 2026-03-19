@@ -1,0 +1,6 @@
+version: v1
+plugins:
+  - name: python
+    out: review-service/gen/python
+  - name: py-grpc
+    out: review-service/gen/python
