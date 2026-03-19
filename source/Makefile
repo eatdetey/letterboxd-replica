@@ -4,7 +4,7 @@ PYTHON ?= python3
 
 # Список сервисов для генерации/линта.
 # Записывать через пробел
-SERVICES := user-service movie-service
+SERVICES := user-service movie-service movie-list-service
 
 SERVICE_DIRS := $(addprefix api/,$(SERVICES))
 
