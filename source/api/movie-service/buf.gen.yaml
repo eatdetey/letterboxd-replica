@@ -1,7 +1,13 @@
 version: v1
 
 plugins:
-  - name: python
-    out: movie-service/grpc_layer/protobuf
-  - name: grpc_python
-    out: movie-service/grpc_layer/protobuf
+  - name: go
+    out: api-gateway/gen/go
+    opt:
+      - paths=source_relative
+      - Mmovie/v1/movie.proto=github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/movie/v1
+  - name: go-grpc
+    out: api-gateway/gen/go
+    opt:
+      - paths=source_relative
+      - Mmovie/v1/movie.proto=github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/movie/v1

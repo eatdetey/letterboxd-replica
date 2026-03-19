@@ -69,6 +69,7 @@ generate: third-party third-party-prepare
 				--python_out=movie-service/grpc_layer/protobuf \
 				--grpc_python_out=movie-service/grpc_layer/protobuf \
 				api/$$service/movie/v1/movie.proto; \
+			$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
 		else \
 			$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
 		fi; \
