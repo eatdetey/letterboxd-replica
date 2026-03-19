@@ -149,4 +149,4 @@ volumes:
   user-db-data:
   movie-db-data:
   movie-list-db-data:
-  review-service:
+  review-db-data:

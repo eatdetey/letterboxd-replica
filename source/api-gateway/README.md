@@ -31,7 +31,7 @@ make generate
 ## Маршруты
 - `POST /api/v1/auth/register` — body: `{username, password, email}`
 - `POST /api/v1/auth/login` — body: `{username, password}`
-- `POST /api/v1/auth/refresh` — body: `{refresh_token}`
+- `POST /api/v1/auth/refresh` — refresh_token берётся из cookie
 - `GET  /api/v1/users?ids=1,2&usernames=a,b&limit=10&offset=0`
 - `GET  /api/v1/movies?limit=20&offset=0&search=&genre=&playlist_id=&enrich_playlists=`
 - `GET  /api/v1/movies/{id}/reviews`
@@ -43,4 +43,11 @@ make generate
 - `POST /api/v1/playlists/{id}/movies` — body: `{movie_id}`
 - `DELETE /api/v1/playlists/{id}/movies/{movie_id}`
 
-Для `GET /api/v1/movies` заголовок `Authorization` прокидывается в `movie-service` через gRPC metadata (`authorization`).
+## Auth схема
+- `register/login/refresh` возвращают `access_token` в JSON body.
+- `refresh_token` хранится и обновляется только в cookie `refresh_token` (HTTP only).
+- Во все защищённые методы передавайте `Authorization: Bearer <access_token>`.
+
+## Swagger
+- UI: `GET /swagger`
+- OpenAPI: `GET /swagger/openapi.yaml`

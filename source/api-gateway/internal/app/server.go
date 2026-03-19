@@ -47,13 +47,13 @@ func New() (*Server, error) {
 		log: log,
 	}
 
-	if err := s.initUserClient(context.Background()); err != nil {
+	if err := s.initUserClient(); err != nil {
 		return nil, err
 	}
-	if err := s.initMovieClient(context.Background()); err != nil {
+	if err := s.initMovieClient(); err != nil {
 		return nil, err
 	}
-	if err := s.initReviewClient(context.Background()); err != nil {
+	if err := s.initReviewClient(); err != nil {
 		return nil, err
 	}
 	s.initFiber()
@@ -98,17 +98,8 @@ func (s *Server) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) initUserClient(ctx context.Context) error {
-	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	conn, err := grpc.DialContext(
-		dialCtx,
-		s.cfg.UserService.Address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10*1024*1024)),
-	)
+func (s *Server) initUserClient() error {
+	conn, err := s.dialService(s.cfg.UserService.Address)
 	if err != nil {
 		return fmt.Errorf("dial user service: %w", err)
 	}
@@ -118,17 +109,8 @@ func (s *Server) initUserClient(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) initMovieClient(ctx context.Context) error {
-	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	conn, err := grpc.DialContext(
-		dialCtx,
-		s.cfg.MovieService.Address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10*1024*1024)),
-	)
+func (s *Server) initMovieClient() error {
+	conn, err := s.dialService(s.cfg.MovieService.Address)
 	if err != nil {
 		return fmt.Errorf("dial movie service: %w", err)
 	}
@@ -138,17 +120,8 @@ func (s *Server) initMovieClient(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) initReviewClient(ctx context.Context) error {
-	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	conn, err := grpc.DialContext(
-		dialCtx,
-		s.cfg.ReviewService.Address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10*1024*1024)),
-	)
+func (s *Server) initReviewClient() error {
+	conn, err := s.dialService(s.cfg.ReviewService.Address)
 	if err != nil {
 		return fmt.Errorf("dial review service: %w", err)
 	}
@@ -156,6 +129,16 @@ func (s *Server) initReviewClient(ctx context.Context) error {
 	s.reviewConn = conn
 	s.reviewClient = reviewpb.NewReviewServiceClient(conn)
 	return nil
+}
+
+func (s *Server) dialService(address string) (*grpc.ClientConn, error) {
+	// Non-blocking dial: API gateway should start even if downstream services
+	// are temporarily unavailable, so health/swagger remain accessible.
+	return grpc.Dial(
+		address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10*1024*1024)),
+	)
 }
 
 func (s *Server) initFiber() {

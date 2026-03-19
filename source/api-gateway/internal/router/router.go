@@ -17,6 +17,9 @@ func Setup(
 	app.Get("/healthz", func(c fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusNoContent)
 	})
+	app.Get("/swagger", handler.SwaggerUI)
+	app.Get("/swagger/", handler.SwaggerUI)
+	app.Get("/swagger/openapi.yaml", handler.SwaggerSpec)
 
 	v1 := app.Group("/api/v1")
 	v1.Post("/auth/register", userHandler.Register)

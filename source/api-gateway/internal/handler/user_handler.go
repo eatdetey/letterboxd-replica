@@ -33,10 +33,6 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
-type refreshRequest struct {
-	RefreshToken string `json:"refresh_token"`
-}
-
 func (h *UserHandler) Register(c fiber.Ctx) error {
 	var req registerRequest
 	if err := c.Bind().Body(&req); err != nil {
@@ -57,10 +53,11 @@ func (h *UserHandler) Register(c fiber.Ctx) error {
 		return grpcErrorToFiber(err)
 	}
 
-	setAuthCookies(c, resp.Tokens)
+	setRefreshCookie(c, resp.GetTokens().GetRefreshToken())
 
 	return c.JSON(map[string]any{
-		"user": mapper.UserFromPB(resp.User),
+		"user":         mapper.UserFromPB(resp.User),
+		"access_token": resp.GetTokens().GetAccessToken(),
 	})
 }
 
@@ -83,24 +80,18 @@ func (h *UserHandler) Login(c fiber.Ctx) error {
 		return grpcErrorToFiber(err)
 	}
 
-	setAuthCookies(c, resp.Tokens)
+	setRefreshCookie(c, resp.GetTokens().GetRefreshToken())
 
 	return c.JSON(map[string]any{
-		"user": mapper.UserFromPB(resp.User),
+		"user":         mapper.UserFromPB(resp.User),
+		"access_token": resp.GetTokens().GetAccessToken(),
 	})
 }
 
 func (h *UserHandler) Refresh(c fiber.Ctx) error {
-	var req refreshRequest
-	if err := c.Bind().Body(&req); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
-	}
-
-	if req.RefreshToken == "" {
-		req.RefreshToken = c.Cookies("refresh_token")
-	}
-	if req.RefreshToken == "" {
-		return fiber.NewError(fiber.StatusBadRequest, "refresh_token is required")
+	refreshToken := c.Cookies("refresh_token")
+	if refreshToken == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "refresh_token cookie is required")
 	}
 
 	reqID, _ := c.Locals("request_id").(string)
@@ -109,14 +100,17 @@ func (h *UserHandler) Refresh(c fiber.Ctx) error {
 	defer cancel()
 
 	resp, err := h.client.Refresh(ctx, &userpb.RefreshRequest{
-		RefreshToken: req.RefreshToken,
+		RefreshToken: refreshToken,
 	})
 	if err != nil {
 		return grpcErrorToFiber(err)
 	}
 
-	setAuthCookies(c, resp.Tokens)
-	return c.SendStatus(fiber.StatusNoContent)
+	setRefreshCookie(c, resp.GetTokens().GetRefreshToken())
+
+	return c.JSON(map[string]any{
+		"access_token": resp.GetTokens().GetAccessToken(),
+	})
 }
 
 func (h *UserHandler) GetUsers(c fiber.Ctx) error {
@@ -217,20 +211,13 @@ func grpcErrorToFiber(err error) error {
 	}
 }
 
-func setAuthCookies(c fiber.Ctx, tokens *userpb.Tokens) {
-	if tokens == nil {
+func setRefreshCookie(c fiber.Ctx, refreshToken string) {
+	if refreshToken == "" {
 		return
 	}
 	c.Cookie(&fiber.Cookie{
-		Name:     "access_token",
-		Value:    tokens.AccessToken,
-		Path:     "/",
-		HTTPOnly: true,
-		SameSite: "Lax",
-	})
-	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
-		Value:    tokens.RefreshToken,
+		Value:    refreshToken,
 		Path:     "/",
 		HTTPOnly: true,
 		SameSite: "Lax",
