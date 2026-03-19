@@ -30,6 +30,7 @@ defineProps<{ movie: MovieDto; variant?: 'compact' | 'default' }>()
   display: block;
   color: inherit;
   text-decoration: none;
+  height: 100%;
 }
 
 .movie-card {
@@ -40,7 +41,7 @@ defineProps<{ movie: MovieDto; variant?: 'compact' | 'default' }>()
   color: var(--text-primary);
   display: grid;
   grid-template-rows: auto 1fr;
-  min-height: 100%;
+  height: 100%;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
@@ -94,6 +95,10 @@ defineProps<{ movie: MovieDto; variant?: 'compact' | 'default' }>()
   font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .movie-card--compact .movie-card__description {

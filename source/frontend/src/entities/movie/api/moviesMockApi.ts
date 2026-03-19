@@ -1,8 +1,20 @@
 import { getMock } from '@shared/api/mockClient'
 import type { MovieDetailsDto, MoviesListResponseDto } from '../model/types'
 
+type GetMoviesParams = {
+  playlistId?: string
+}
+
 export const moviesMockApi = {
-  getMovies(): Promise<MoviesListResponseDto> {
+  async getMovies(params: GetMoviesParams = {}): Promise<MoviesListResponseDto> {
+    if (params.playlistId) {
+      try {
+        return await getMock<MoviesListResponseDto>(`v1/playlists/${params.playlistId}/movies/response.json`)
+      } catch {
+        return { items: [], total: 0 }
+      }
+    }
+
     return getMock<MoviesListResponseDto>('v1/movies/response.json')
   },
   async getMovie(id: string): Promise<MovieDetailsDto> {

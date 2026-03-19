@@ -3,8 +3,8 @@
     <v-container class="app-header__container">
       <router-link class="app-header__brand" :to="{ name: 'home' }">CineVault</router-link>
       <div class="app-header__nav">
-        <v-btn variant="text" class="app-header__link">Movies</v-btn>
-        <v-btn variant="text" class="app-header__link">Lists</v-btn>
+        <v-btn variant="text" class="app-header__link" :to="{ name: 'home' }">Movies</v-btn>
+        <v-btn variant="text" class="app-header__link" :to="{ name: 'playlists' }">Lists</v-btn>
         <v-btn variant="text" class="app-header__link">Profile</v-btn>
       </div>
       <div class="app-header__actions">

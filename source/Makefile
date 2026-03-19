@@ -1,9 +1,10 @@
 BUF ?= buf
 GIT ?= git
+PYTHON ?= python3
 
 # Список сервисов для генерации/линта.
 # Записывать через пробел
-SERVICES := user-service
+SERVICES := user-service movie-service movie-list-service
 
 SERVICE_DIRS := $(addprefix api/,$(SERVICES))
 
@@ -62,7 +63,15 @@ third-party-clean:
 generate: third-party third-party-prepare
 	@set -e; \
 	for service in $(SERVICES); do \
-		$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
+		if [ "$$service" = "movie-service" ]; then \
+			$(PYTHON) -m grpc_tools.protoc \
+				-I api/$$service \
+				--python_out=movie-service/grpc_layer/protobuf \
+				--grpc_python_out=movie-service/grpc_layer/protobuf \
+				api/$$service/movie/v1/movie.proto; \
+		else \
+			$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
+		fi; \
 	done
 
 lint: third-party third-party-prepare
