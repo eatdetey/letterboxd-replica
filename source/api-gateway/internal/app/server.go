@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	moviepb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/movie/v1"
 	userpb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/user/v1"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/config"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/handler"
@@ -20,9 +21,11 @@ type Server struct {
 	cfg *config.Config
 	log *zap.SugaredLogger
 
-	app        *fiber.App
-	userClient userpb.UserServiceClient
-	userConn   *grpc.ClientConn
+	app         *fiber.App
+	userClient  userpb.UserServiceClient
+	movieClient moviepb.MovieServiceClient
+	userConn    *grpc.ClientConn
+	movieConn   *grpc.ClientConn
 }
 
 func New() (*Server, error) {
@@ -42,6 +45,9 @@ func New() (*Server, error) {
 	}
 
 	if err := s.initUserClient(context.Background()); err != nil {
+		return nil, err
+	}
+	if err := s.initMovieClient(context.Background()); err != nil {
 		return nil, err
 	}
 	s.initFiber()
@@ -75,6 +81,9 @@ func (s *Server) Stop(ctx context.Context) error {
 	if s.userConn != nil {
 		s.userConn.Close()
 	}
+	if s.movieConn != nil {
+		s.movieConn.Close()
+	}
 
 	s.log.Infow("gateway.stopped")
 	return nil
@@ -100,6 +109,26 @@ func (s *Server) initUserClient(ctx context.Context) error {
 	return nil
 }
 
+func (s *Server) initMovieClient(ctx context.Context) error {
+	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(
+		dialCtx,
+		s.cfg.MovieService.Address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10*1024*1024)),
+	)
+	if err != nil {
+		return fmt.Errorf("dial movie service: %w", err)
+	}
+
+	s.movieConn = conn
+	s.movieClient = moviepb.NewMovieServiceClient(conn)
+	return nil
+}
+
 func (s *Server) initFiber() {
 	app := fiber.New(fiber.Config{
 		Immutable: true,
@@ -112,7 +141,8 @@ func (s *Server) initFiber() {
 	})
 
 	userHandler := handler.NewUserHandler(s.userClient)
-	router.Setup(app, userHandler)
+	movieHandler := handler.NewMovieHandler(s.movieClient)
+	router.Setup(app, userHandler, movieHandler)
 
 	s.app = app
 }

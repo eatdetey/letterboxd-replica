@@ -1,2 +1,8 @@
 http:
   addr: ":8080"
+
+user_service:
+  address: "user-service:50051"
+
+movie_service:
+  address: "movie-service:50051"

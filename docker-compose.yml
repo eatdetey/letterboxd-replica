@@ -73,9 +73,11 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - user-service
+      - movie-service
     environment:
       - CONFIG_PATH=/etc/api-gateway/config.yaml
       - USER_SERVICE_ADDRESS=user-service:50051
+      - MOVIE_SERVICE_ADDRESS=movie-service:50051
     volumes:
       - ./source/configs/api-gateway/config.yaml:/etc/api-gateway/config.yaml:ro
     ports:
