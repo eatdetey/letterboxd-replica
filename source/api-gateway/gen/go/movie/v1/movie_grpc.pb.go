@@ -19,10 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MovieService_GetMovies_FullMethodName   = "/movie.v1.MovieService/GetMovies"
-	MovieService_CreateMovie_FullMethodName = "/movie.v1.MovieService/CreateMovie"
-	MovieService_UpdateMovie_FullMethodName = "/movie.v1.MovieService/UpdateMovie"
-	MovieService_DeleteMovie_FullMethodName = "/movie.v1.MovieService/DeleteMovie"
+	MovieService_GetMovies_FullMethodName               = "/movie.v1.MovieService/GetMovies"
+	MovieService_GetPlaylistsForUser_FullMethodName     = "/movie.v1.MovieService/GetPlaylistsForUser"
+	MovieService_CreatePlaylist_FullMethodName          = "/movie.v1.MovieService/CreatePlaylist"
+	MovieService_RenamePlaylist_FullMethodName          = "/movie.v1.MovieService/RenamePlaylist"
+	MovieService_DeletePlaylist_FullMethodName          = "/movie.v1.MovieService/DeletePlaylist"
+	MovieService_AddMovieToPlaylist_FullMethodName      = "/movie.v1.MovieService/AddMovieToPlaylist"
+	MovieService_RemoveMovieFromPlaylist_FullMethodName = "/movie.v1.MovieService/RemoveMovieFromPlaylist"
+	MovieService_CreateMovie_FullMethodName             = "/movie.v1.MovieService/CreateMovie"
+	MovieService_UpdateMovie_FullMethodName             = "/movie.v1.MovieService/UpdateMovie"
+	MovieService_DeleteMovie_FullMethodName             = "/movie.v1.MovieService/DeleteMovie"
 )
 
 // MovieServiceClient is the client API for MovieService service.
@@ -30,6 +36,12 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MovieServiceClient interface {
 	GetMovies(ctx context.Context, in *GetMoviesRequest, opts ...grpc.CallOption) (*GetMoviesResponse, error)
+	GetPlaylistsForUser(ctx context.Context, in *GetPlaylistsForUserRequest, opts ...grpc.CallOption) (*GetPlaylistsForUserResponse, error)
+	CreatePlaylist(ctx context.Context, in *CreatePlaylistRequest, opts ...grpc.CallOption) (*CreatePlaylistResponse, error)
+	RenamePlaylist(ctx context.Context, in *RenamePlaylistRequest, opts ...grpc.CallOption) (*RenamePlaylistResponse, error)
+	DeletePlaylist(ctx context.Context, in *DeletePlaylistRequest, opts ...grpc.CallOption) (*DeletePlaylistResponse, error)
+	AddMovieToPlaylist(ctx context.Context, in *AddMovieToPlaylistRequest, opts ...grpc.CallOption) (*AddMovieToPlaylistResponse, error)
+	RemoveMovieFromPlaylist(ctx context.Context, in *RemoveMovieFromPlaylistRequest, opts ...grpc.CallOption) (*RemoveMovieFromPlaylistResponse, error)
 	CreateMovie(ctx context.Context, in *CreateMovieRequest, opts ...grpc.CallOption) (*CreateMovieResponse, error)
 	UpdateMovie(ctx context.Context, in *UpdateMovieRequest, opts ...grpc.CallOption) (*UpdateMovieResponse, error)
 	DeleteMovie(ctx context.Context, in *DeleteMovieRequest, opts ...grpc.CallOption) (*DeleteMovieResponse, error)
@@ -47,6 +59,66 @@ func (c *movieServiceClient) GetMovies(ctx context.Context, in *GetMoviesRequest
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetMoviesResponse)
 	err := c.cc.Invoke(ctx, MovieService_GetMovies_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) GetPlaylistsForUser(ctx context.Context, in *GetPlaylistsForUserRequest, opts ...grpc.CallOption) (*GetPlaylistsForUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPlaylistsForUserResponse)
+	err := c.cc.Invoke(ctx, MovieService_GetPlaylistsForUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) CreatePlaylist(ctx context.Context, in *CreatePlaylistRequest, opts ...grpc.CallOption) (*CreatePlaylistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePlaylistResponse)
+	err := c.cc.Invoke(ctx, MovieService_CreatePlaylist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) RenamePlaylist(ctx context.Context, in *RenamePlaylistRequest, opts ...grpc.CallOption) (*RenamePlaylistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RenamePlaylistResponse)
+	err := c.cc.Invoke(ctx, MovieService_RenamePlaylist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) DeletePlaylist(ctx context.Context, in *DeletePlaylistRequest, opts ...grpc.CallOption) (*DeletePlaylistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePlaylistResponse)
+	err := c.cc.Invoke(ctx, MovieService_DeletePlaylist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) AddMovieToPlaylist(ctx context.Context, in *AddMovieToPlaylistRequest, opts ...grpc.CallOption) (*AddMovieToPlaylistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddMovieToPlaylistResponse)
+	err := c.cc.Invoke(ctx, MovieService_AddMovieToPlaylist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) RemoveMovieFromPlaylist(ctx context.Context, in *RemoveMovieFromPlaylistRequest, opts ...grpc.CallOption) (*RemoveMovieFromPlaylistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveMovieFromPlaylistResponse)
+	err := c.cc.Invoke(ctx, MovieService_RemoveMovieFromPlaylist_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +160,12 @@ func (c *movieServiceClient) DeleteMovie(ctx context.Context, in *DeleteMovieReq
 // for forward compatibility.
 type MovieServiceServer interface {
 	GetMovies(context.Context, *GetMoviesRequest) (*GetMoviesResponse, error)
+	GetPlaylistsForUser(context.Context, *GetPlaylistsForUserRequest) (*GetPlaylistsForUserResponse, error)
+	CreatePlaylist(context.Context, *CreatePlaylistRequest) (*CreatePlaylistResponse, error)
+	RenamePlaylist(context.Context, *RenamePlaylistRequest) (*RenamePlaylistResponse, error)
+	DeletePlaylist(context.Context, *DeletePlaylistRequest) (*DeletePlaylistResponse, error)
+	AddMovieToPlaylist(context.Context, *AddMovieToPlaylistRequest) (*AddMovieToPlaylistResponse, error)
+	RemoveMovieFromPlaylist(context.Context, *RemoveMovieFromPlaylistRequest) (*RemoveMovieFromPlaylistResponse, error)
 	CreateMovie(context.Context, *CreateMovieRequest) (*CreateMovieResponse, error)
 	UpdateMovie(context.Context, *UpdateMovieRequest) (*UpdateMovieResponse, error)
 	DeleteMovie(context.Context, *DeleteMovieRequest) (*DeleteMovieResponse, error)
@@ -103,6 +181,24 @@ type UnimplementedMovieServiceServer struct{}
 
 func (UnimplementedMovieServiceServer) GetMovies(context.Context, *GetMoviesRequest) (*GetMoviesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMovies not implemented")
+}
+func (UnimplementedMovieServiceServer) GetPlaylistsForUser(context.Context, *GetPlaylistsForUserRequest) (*GetPlaylistsForUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPlaylistsForUser not implemented")
+}
+func (UnimplementedMovieServiceServer) CreatePlaylist(context.Context, *CreatePlaylistRequest) (*CreatePlaylistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePlaylist not implemented")
+}
+func (UnimplementedMovieServiceServer) RenamePlaylist(context.Context, *RenamePlaylistRequest) (*RenamePlaylistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenamePlaylist not implemented")
+}
+func (UnimplementedMovieServiceServer) DeletePlaylist(context.Context, *DeletePlaylistRequest) (*DeletePlaylistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePlaylist not implemented")
+}
+func (UnimplementedMovieServiceServer) AddMovieToPlaylist(context.Context, *AddMovieToPlaylistRequest) (*AddMovieToPlaylistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMovieToPlaylist not implemented")
+}
+func (UnimplementedMovieServiceServer) RemoveMovieFromPlaylist(context.Context, *RemoveMovieFromPlaylistRequest) (*RemoveMovieFromPlaylistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveMovieFromPlaylist not implemented")
 }
 func (UnimplementedMovieServiceServer) CreateMovie(context.Context, *CreateMovieRequest) (*CreateMovieResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMovie not implemented")
@@ -148,6 +244,114 @@ func _MovieService_GetMovies_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MovieServiceServer).GetMovies(ctx, req.(*GetMoviesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_GetPlaylistsForUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlaylistsForUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).GetPlaylistsForUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_GetPlaylistsForUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).GetPlaylistsForUser(ctx, req.(*GetPlaylistsForUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_CreatePlaylist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePlaylistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).CreatePlaylist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_CreatePlaylist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).CreatePlaylist(ctx, req.(*CreatePlaylistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_RenamePlaylist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenamePlaylistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).RenamePlaylist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_RenamePlaylist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).RenamePlaylist(ctx, req.(*RenamePlaylistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_DeletePlaylist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePlaylistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).DeletePlaylist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_DeletePlaylist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).DeletePlaylist(ctx, req.(*DeletePlaylistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_AddMovieToPlaylist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMovieToPlaylistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).AddMovieToPlaylist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_AddMovieToPlaylist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).AddMovieToPlaylist(ctx, req.(*AddMovieToPlaylistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_RemoveMovieFromPlaylist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveMovieFromPlaylistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).RemoveMovieFromPlaylist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_RemoveMovieFromPlaylist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).RemoveMovieFromPlaylist(ctx, req.(*RemoveMovieFromPlaylistRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -216,6 +420,30 @@ var MovieService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMovies",
 			Handler:    _MovieService_GetMovies_Handler,
+		},
+		{
+			MethodName: "GetPlaylistsForUser",
+			Handler:    _MovieService_GetPlaylistsForUser_Handler,
+		},
+		{
+			MethodName: "CreatePlaylist",
+			Handler:    _MovieService_CreatePlaylist_Handler,
+		},
+		{
+			MethodName: "RenamePlaylist",
+			Handler:    _MovieService_RenamePlaylist_Handler,
+		},
+		{
+			MethodName: "DeletePlaylist",
+			Handler:    _MovieService_DeletePlaylist_Handler,
+		},
+		{
+			MethodName: "AddMovieToPlaylist",
+			Handler:    _MovieService_AddMovieToPlaylist_Handler,
+		},
+		{
+			MethodName: "RemoveMovieFromPlaylist",
+			Handler:    _MovieService_RemoveMovieFromPlaylist_Handler,
 		},
 		{
 			MethodName: "CreateMovie",

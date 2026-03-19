@@ -4,125 +4,105 @@ package movielist.v1;
 
 option go_package = "github.com/eatdetey/letterboxd-replica/source/movie-list-service/gen/go/movielist/v1;movielist";
 
-// MovieListService provides methods for managing playlists and filtering movies by playlists.
 service MovieListService {
-    // FilterMoviesByPlaylist filters a list of candidate movie IDs by membership in a specific playlist.
-    rpc FilterMoviesByPlaylist(FilterRequest) returns (MovieIdsResponse);
+    rpc FilterMoviesByPlaylist(FilterMoviesByPlaylistRequest) returns (FilterMoviesByPlaylistResponse);
 
-    // GetPlaylistsForMovie returns all playlists containing a specific movie for a user.
-    rpc GetPlaylistsForMovie(MoviePlaylistRequest) returns (PlaylistsResponse);
+    rpc GetPlaylistsForMovie(GetPlaylistsForMovieRequest) returns (GetPlaylistsForMovieResponse);
 
-    // GetPlaylistsForUser returns all playlists for a specific user.
-    rpc GetPlaylistsForUser(UserPlaylistsRequest) returns (UserPlaylistsResponse);
+    rpc GetPlaylistsForUser(GetPlaylistsForUserRequest) returns (GetPlaylistsForUserResponse);
 
-    // CreatePlaylist creates a new playlist for a user.
-    rpc CreatePlaylist(CreatePlaylistRequest) returns (PlaylistResponse);
+    rpc CreatePlaylist(CreatePlaylistRequest) returns (CreatePlaylistResponse);
 
-    // RenamePlaylist renames an existing playlist.
-    rpc RenamePlaylist(RenamePlaylistRequest) returns (PlaylistResponse);
+    rpc RenamePlaylist(RenamePlaylistRequest) returns (RenamePlaylistResponse);
 
-    // DeletePlaylist deletes a playlist.
-    rpc DeletePlaylist(DeletePlaylistRequest) returns (Empty);
+    rpc DeletePlaylist(DeletePlaylistRequest) returns (DeletePlaylistResponse);
 
-    // AddMovieToPlaylist adds a movie to a playlist.
-    rpc AddMovieToPlaylist(AddMovieRequest) returns (Empty);
+    rpc AddMovieToPlaylist(AddMovieToPlaylistRequest) returns (AddMovieToPlaylistResponse);
 
-    // RemoveMovieFromPlaylist removes a movie from a playlist.
-    rpc RemoveMovieFromPlaylist(RemoveMovieRequest) returns (Empty);
+    rpc RemoveMovieFromPlaylist(RemoveMovieFromPlaylistRequest) returns (RemoveMovieFromPlaylistResponse);
 
-    // GetPlaylistMovies returns all movies in a playlist.
-    rpc GetPlaylistMovies(GetPlaylistMoviesRequest) returns (PlaylistMoviesResponse);
+    rpc GetPlaylistMovies(GetPlaylistMoviesRequest) returns (GetPlaylistMoviesResponse);
 }
 
-// FilterRequest is used to filter candidate movies by playlist membership.
-message FilterRequest {
-    string user_id = 1;
-    string playlist_id = 2;
-    repeated string candidate_movie_ids = 3;
+message FilterMoviesByPlaylistRequest {
+    string playlist_id = 1;
+    repeated string candidate_movie_ids = 2;
 }
 
-// MovieIdsResponse returns a list of movie IDs.
-message MovieIdsResponse {
+message FilterMoviesByPlaylistResponse {
     repeated string movie_ids = 1;
 }
 
-// MoviePlaylistRequest is used to get playlists for a specific movie.
-message MoviePlaylistRequest {
-    string user_id = 1;
-    string movie_id = 2;
+message GetPlaylistsForMovieRequest {
+    string movie_id = 1;
 }
 
-// PlaylistInfo contains basic information about a playlist.
 message PlaylistInfo {
     string id = 1;
     string name = 2;
     int32 movies_count = 3;
 }
 
-// PlaylistsResponse returns a list of playlists.
-message PlaylistsResponse {
+message GetPlaylistsForMovieResponse {
     repeated PlaylistInfo playlists = 1;
 }
 
-// UserPlaylistsRequest is used to get all playlists for a user.
-message UserPlaylistsRequest {
-    string user_id = 1;
-}
+message GetPlaylistsForUserRequest {}
 
-// UserPlaylistsResponse returns all playlists for a user.
-message UserPlaylistsResponse {
+message GetPlaylistsForUserResponse {
     repeated PlaylistInfo playlists = 1;
 }
 
-// CreatePlaylistRequest is used to create a new playlist.
 message CreatePlaylistRequest {
-    string user_id = 1;
-    string name = 2;
+    string name = 1;
 }
 
-// PlaylistResponse returns playlist information.
-message PlaylistResponse {
+message CreatePlaylistResponse {
     string id = 1;
     string user_id = 2;
     string name = 3;
     int32 movies_count = 4;
 }
 
-// RenamePlaylistRequest is used to rename a playlist.
 message RenamePlaylistRequest {
     string playlist_id = 1;
     string new_name = 2;
 }
 
-// DeletePlaylistRequest is used to delete a playlist.
+message RenamePlaylistResponse {
+    string id = 1;
+    string user_id = 2;
+    string name = 3;
+    int32 movies_count = 4;
+}
+
 message DeletePlaylistRequest {
     string playlist_id = 1;
 }
 
-// AddMovieRequest is used to add a movie to a playlist.
-message AddMovieRequest {
+message DeletePlaylistResponse {}
+
+message AddMovieToPlaylistRequest {
     string playlist_id = 1;
     string movie_id = 2;
 }
 
-// RemoveMovieRequest is used to remove a movie from a playlist.
-message RemoveMovieRequest {
+message AddMovieToPlaylistResponse {}
+
+message RemoveMovieFromPlaylistRequest {
     string playlist_id = 1;
     string movie_id = 2;
 }
 
-// GetPlaylistMoviesRequest is used to get all movies in a playlist.
+message RemoveMovieFromPlaylistResponse {}
+
 message GetPlaylistMoviesRequest {
     string playlist_id = 1;
     int32 limit = 2;
     int32 offset = 3;
 }
 
-// PlaylistMoviesResponse returns movies in a playlist.
-message PlaylistMoviesResponse {
+message GetPlaylistMoviesResponse {
     repeated string movie_ids = 1;
     int32 total = 2;
 }
-
-// Empty message for methods that don't return data.
-message Empty {}

@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14movie/v1/movie.proto\x12\x08movie.v1\"\xdd\x01\n\x10GetMoviesRequest\x12\r\n\x05limit\x18\x01 \x01(\x05\x12\x0e\n\x06offset\x18\x02 \x01(\x05\x12\x19\n\x0csearch_query\x18\x03 \x01(\tH\x00\x88\x01\x01\x12\x12\n\x05genre\x18\x04 \x01(\tH\x01\x88\x01\x01\x12\x0b\n\x03ids\x18\x05 \x03(\t\x12\x18\n\x0bplaylist_id\x18\x06 \x01(\tH\x02\x88\x01\x01\x12\x0f\n\x07user_id\x18\x07 \x01(\t\x12\x18\n\x10\x65nrich_playlists\x18\x08 \x01(\x08\x42\x0f\n\r_search_queryB\x08\n\x06_genreB\x0e\n\x0c_playlist_id\"J\n\x11GetMoviesResponse\x12&\n\x05items\x18\x01 \x03(\x0b\x32\x17.movie.v1.MovieDetailed\x12\r\n\x05total\x18\x02 \x01(\x05\"\xa0\x01\n\rMovieDetailed\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\x0crelease_year\x18\x04 \x01(\x05\x12\x0e\n\x06genres\x18\x05 \x03(\t\x12\x0e\n\x06poster\x18\x06 \x01(\t\x12)\n\tplaylists\x18\x07 \x03(\x0b\x32\x16.movie.v1.PlaylistInfo\"(\n\x0cPlaylistInfo\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\"n\n\x12\x43reateMovieRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x14\n\x0crelease_year\x18\x03 \x01(\x05\x12\x0e\n\x06genres\x18\x04 \x03(\t\x12\x0e\n\x06poster\x18\x05 \x01(\t\"5\n\x13\x43reateMovieResponse\x12\x1e\n\x05movie\x18\x01 \x01(\x0b\x32\x0f.movie.v1.Movie\"\xb4\x01\n\x12UpdateMovieRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\x05title\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x18\n\x0b\x64\x65scription\x18\x03 \x01(\tH\x01\x88\x01\x01\x12\x19\n\x0crelease_year\x18\x04 \x01(\x05H\x02\x88\x01\x01\x12\x0e\n\x06genres\x18\x05 \x03(\t\x12\x0e\n\x06poster\x18\x06 \x01(\tB\x08\n\x06_titleB\x0e\n\x0c_descriptionB\x0f\n\r_release_year\"5\n\x13UpdateMovieResponse\x12\x1e\n\x05movie\x18\x01 \x01(\x0b\x32\x0f.movie.v1.Movie\" \n\x12\x44\x65leteMovieRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x15\n\x13\x44\x65leteMovieResponse\"m\n\x05Movie\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\x0crelease_year\x18\x04 \x01(\x05\x12\x0e\n\x06genres\x18\x05 \x03(\t\x12\x0e\n\x06poster\x18\x06 \x01(\t2\xb8\x02\n\x0cMovieService\x12\x44\n\tGetMovies\x12\x1a.movie.v1.GetMoviesRequest\x1a\x1b.movie.v1.GetMoviesResponse\x12J\n\x0b\x43reateMovie\x12\x1c.movie.v1.CreateMovieRequest\x1a\x1d.movie.v1.CreateMovieResponse\x12J\n\x0bUpdateMovie\x12\x1c.movie.v1.UpdateMovieRequest\x1a\x1d.movie.v1.UpdateMovieResponse\x12J\n\x0b\x44\x65leteMovie\x12\x1c.movie.v1.DeleteMovieRequest\x1a\x1d.movie.v1.DeleteMovieResponseB\"Z movie-service/gen/go/movie;movieb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14movie/v1/movie.proto\x12\x08movie.v1\"\xdd\x01\n\x10GetMoviesRequest\x12\r\n\x05limit\x18\x01 \x01(\x05\x12\x0e\n\x06offset\x18\x02 \x01(\x05\x12\x19\n\x0csearch_query\x18\x03 \x01(\tH\x00\x88\x01\x01\x12\x12\n\x05genre\x18\x04 \x01(\tH\x01\x88\x01\x01\x12\x0b\n\x03ids\x18\x05 \x03(\t\x12\x18\n\x0bplaylist_id\x18\x06 \x01(\tH\x02\x88\x01\x01\x12\x0f\n\x07user_id\x18\x07 \x01(\t\x12\x18\n\x10\x65nrich_playlists\x18\x08 \x01(\x08\x42\x0f\n\r_search_queryB\x08\n\x06_genreB\x0e\n\x0c_playlist_id\"J\n\x11GetMoviesResponse\x12&\n\x05items\x18\x01 \x03(\x0b\x32\x17.movie.v1.MovieDetailed\x12\r\n\x05total\x18\x02 \x01(\x05\"\xa0\x01\n\rMovieDetailed\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\x0crelease_year\x18\x04 \x01(\x05\x12\x0e\n\x06genres\x18\x05 \x03(\t\x12\x0e\n\x06poster\x18\x06 \x01(\t\x12)\n\tplaylists\x18\x07 \x03(\x0b\x32\x16.movie.v1.PlaylistInfo\"(\n\x0cPlaylistInfo\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\":\n\x08Playlist\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0cmovies_count\x18\x03 \x01(\x05\"\x1c\n\x1aGetPlaylistsForUserRequest\"@\n\x1bGetPlaylistsForUserResponse\x12!\n\x05items\x18\x01 \x03(\x0b\x32\x12.movie.v1.Playlist\"%\n\x15\x43reatePlaylistRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\">\n\x16\x43reatePlaylistResponse\x12$\n\x08playlist\x18\x01 \x01(\x0b\x32\x12.movie.v1.Playlist\">\n\x15RenamePlaylistRequest\x12\x13\n\x0bplaylist_id\x18\x01 \x01(\t\x12\x10\n\x08new_name\x18\x02 \x01(\t\">\n\x16RenamePlaylistResponse\x12$\n\x08playlist\x18\x01 \x01(\x0b\x32\x12.movie.v1.Playlist\",\n\x15\x44\x65letePlaylistRequest\x12\x13\n\x0bplaylist_id\x18\x01 \x01(\t\"\x18\n\x16\x44\x65letePlaylistResponse\"B\n\x19\x41\x64\x64MovieToPlaylistRequest\x12\x13\n\x0bplaylist_id\x18\x01 \x01(\t\x12\x10\n\x08movie_id\x18\x02 \x01(\t\"\x1c\n\x1a\x41\x64\x64MovieToPlaylistResponse\"G\n\x1eRemoveMovieFromPlaylistRequest\x12\x13\n\x0bplaylist_id\x18\x01 \x01(\t\x12\x10\n\x08movie_id\x18\x02 \x01(\t\"!\n\x1fRemoveMovieFromPlaylistResponse\"n\n\x12\x43reateMovieRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x14\n\x0crelease_year\x18\x03 \x01(\x05\x12\x0e\n\x06genres\x18\x04 \x03(\t\x12\x0e\n\x06poster\x18\x05 \x01(\t\"5\n\x13\x43reateMovieResponse\x12\x1e\n\x05movie\x18\x01 \x01(\x0b\x32\x0f.movie.v1.Movie\"\xb4\x01\n\x12UpdateMovieRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\x05title\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x18\n\x0b\x64\x65scription\x18\x03 \x01(\tH\x01\x88\x01\x01\x12\x19\n\x0crelease_year\x18\x04 \x01(\x05H\x02\x88\x01\x01\x12\x0e\n\x06genres\x18\x05 \x03(\t\x12\x0e\n\x06poster\x18\x06 \x01(\tB\x08\n\x06_titleB\x0e\n\x0c_descriptionB\x0f\n\r_release_year\"5\n\x13UpdateMovieResponse\x12\x1e\n\x05movie\x18\x01 \x01(\x0b\x32\x0f.movie.v1.Movie\" \n\x12\x44\x65leteMovieRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x15\n\x13\x44\x65leteMovieResponse\"m\n\x05Movie\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\x0crelease_year\x18\x04 \x01(\x05\x12\x0e\n\x06genres\x18\x05 \x03(\t\x12\x0e\n\x06poster\x18\x06 \x01(\t2\xec\x06\n\x0cMovieService\x12\x44\n\tGetMovies\x12\x1a.movie.v1.GetMoviesRequest\x1a\x1b.movie.v1.GetMoviesResponse\x12\x62\n\x13GetPlaylistsForUser\x12$.movie.v1.GetPlaylistsForUserRequest\x1a%.movie.v1.GetPlaylistsForUserResponse\x12S\n\x0e\x43reatePlaylist\x12\x1f.movie.v1.CreatePlaylistRequest\x1a .movie.v1.CreatePlaylistResponse\x12S\n\x0eRenamePlaylist\x12\x1f.movie.v1.RenamePlaylistRequest\x1a .movie.v1.RenamePlaylistResponse\x12S\n\x0e\x44\x65letePlaylist\x12\x1f.movie.v1.DeletePlaylistRequest\x1a .movie.v1.DeletePlaylistResponse\x12_\n\x12\x41\x64\x64MovieToPlaylist\x12#.movie.v1.AddMovieToPlaylistRequest\x1a$.movie.v1.AddMovieToPlaylistResponse\x12n\n\x17RemoveMovieFromPlaylist\x12(.movie.v1.RemoveMovieFromPlaylistRequest\x1a).movie.v1.RemoveMovieFromPlaylistResponse\x12J\n\x0b\x43reateMovie\x12\x1c.movie.v1.CreateMovieRequest\x1a\x1d.movie.v1.CreateMovieResponse\x12J\n\x0bUpdateMovie\x12\x1c.movie.v1.UpdateMovieRequest\x1a\x1d.movie.v1.UpdateMovieResponse\x12J\n\x0b\x44\x65leteMovie\x12\x1c.movie.v1.DeleteMovieRequest\x1a\x1d.movie.v1.DeleteMovieResponseB\"Z movie-service/gen/go/movie;movieb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -40,20 +40,46 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_MOVIEDETAILED']._serialized_end=495
   _globals['_PLAYLISTINFO']._serialized_start=497
   _globals['_PLAYLISTINFO']._serialized_end=537
-  _globals['_CREATEMOVIEREQUEST']._serialized_start=539
-  _globals['_CREATEMOVIEREQUEST']._serialized_end=649
-  _globals['_CREATEMOVIERESPONSE']._serialized_start=651
-  _globals['_CREATEMOVIERESPONSE']._serialized_end=704
-  _globals['_UPDATEMOVIEREQUEST']._serialized_start=707
-  _globals['_UPDATEMOVIEREQUEST']._serialized_end=887
-  _globals['_UPDATEMOVIERESPONSE']._serialized_start=889
-  _globals['_UPDATEMOVIERESPONSE']._serialized_end=942
-  _globals['_DELETEMOVIEREQUEST']._serialized_start=944
-  _globals['_DELETEMOVIEREQUEST']._serialized_end=976
-  _globals['_DELETEMOVIERESPONSE']._serialized_start=978
-  _globals['_DELETEMOVIERESPONSE']._serialized_end=999
-  _globals['_MOVIE']._serialized_start=1001
-  _globals['_MOVIE']._serialized_end=1110
-  _globals['_MOVIESERVICE']._serialized_start=1113
-  _globals['_MOVIESERVICE']._serialized_end=1425
+  _globals['_PLAYLIST']._serialized_start=539
+  _globals['_PLAYLIST']._serialized_end=597
+  _globals['_GETPLAYLISTSFORUSERREQUEST']._serialized_start=599
+  _globals['_GETPLAYLISTSFORUSERREQUEST']._serialized_end=627
+  _globals['_GETPLAYLISTSFORUSERRESPONSE']._serialized_start=629
+  _globals['_GETPLAYLISTSFORUSERRESPONSE']._serialized_end=693
+  _globals['_CREATEPLAYLISTREQUEST']._serialized_start=695
+  _globals['_CREATEPLAYLISTREQUEST']._serialized_end=732
+  _globals['_CREATEPLAYLISTRESPONSE']._serialized_start=734
+  _globals['_CREATEPLAYLISTRESPONSE']._serialized_end=796
+  _globals['_RENAMEPLAYLISTREQUEST']._serialized_start=798
+  _globals['_RENAMEPLAYLISTREQUEST']._serialized_end=860
+  _globals['_RENAMEPLAYLISTRESPONSE']._serialized_start=862
+  _globals['_RENAMEPLAYLISTRESPONSE']._serialized_end=924
+  _globals['_DELETEPLAYLISTREQUEST']._serialized_start=926
+  _globals['_DELETEPLAYLISTREQUEST']._serialized_end=970
+  _globals['_DELETEPLAYLISTRESPONSE']._serialized_start=972
+  _globals['_DELETEPLAYLISTRESPONSE']._serialized_end=996
+  _globals['_ADDMOVIETOPLAYLISTREQUEST']._serialized_start=998
+  _globals['_ADDMOVIETOPLAYLISTREQUEST']._serialized_end=1064
+  _globals['_ADDMOVIETOPLAYLISTRESPONSE']._serialized_start=1066
+  _globals['_ADDMOVIETOPLAYLISTRESPONSE']._serialized_end=1094
+  _globals['_REMOVEMOVIEFROMPLAYLISTREQUEST']._serialized_start=1096
+  _globals['_REMOVEMOVIEFROMPLAYLISTREQUEST']._serialized_end=1167
+  _globals['_REMOVEMOVIEFROMPLAYLISTRESPONSE']._serialized_start=1169
+  _globals['_REMOVEMOVIEFROMPLAYLISTRESPONSE']._serialized_end=1202
+  _globals['_CREATEMOVIEREQUEST']._serialized_start=1204
+  _globals['_CREATEMOVIEREQUEST']._serialized_end=1314
+  _globals['_CREATEMOVIERESPONSE']._serialized_start=1316
+  _globals['_CREATEMOVIERESPONSE']._serialized_end=1369
+  _globals['_UPDATEMOVIEREQUEST']._serialized_start=1372
+  _globals['_UPDATEMOVIEREQUEST']._serialized_end=1552
+  _globals['_UPDATEMOVIERESPONSE']._serialized_start=1554
+  _globals['_UPDATEMOVIERESPONSE']._serialized_end=1607
+  _globals['_DELETEMOVIEREQUEST']._serialized_start=1609
+  _globals['_DELETEMOVIEREQUEST']._serialized_end=1641
+  _globals['_DELETEMOVIERESPONSE']._serialized_start=1643
+  _globals['_DELETEMOVIERESPONSE']._serialized_end=1664
+  _globals['_MOVIE']._serialized_start=1666
+  _globals['_MOVIE']._serialized_end=1775
+  _globals['_MOVIESERVICE']._serialized_start=1778
+  _globals['_MOVIESERVICE']._serialized_end=2654
 # @@protoc_insertion_point(module_scope)

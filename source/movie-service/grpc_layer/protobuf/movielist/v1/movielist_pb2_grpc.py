@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from movie.v1 import movie_pb2 as movie_dot_v1_dot_movie__pb2
+from movielist.v1 import movielist_pb2 as movielist_dot_v1_dot_movielist__pb2
 
 GRPC_GENERATED_VERSION = '1.78.0'
 GRPC_VERSION = grpc.__version__
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in movie/v1/movie_pb2_grpc.py depends on'
+        + ' but the generated code in movielist/v1/movielist_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class MovieServiceStub(object):
+class MovieListServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -34,62 +34,63 @@ class MovieServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetMovies = channel.unary_unary(
-                '/movie.v1.MovieService/GetMovies',
-                request_serializer=movie_dot_v1_dot_movie__pb2.GetMoviesRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.GetMoviesResponse.FromString,
+        self.FilterMoviesByPlaylist = channel.unary_unary(
+                '/movielist.v1.MovieListService/FilterMoviesByPlaylist',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.FilterMoviesByPlaylistRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.FilterMoviesByPlaylistResponse.FromString,
+                _registered_method=True)
+        self.GetPlaylistsForMovie = channel.unary_unary(
+                '/movielist.v1.MovieListService/GetPlaylistsForMovie',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForMovieRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForMovieResponse.FromString,
                 _registered_method=True)
         self.GetPlaylistsForUser = channel.unary_unary(
-                '/movie.v1.MovieService/GetPlaylistsForUser',
-                request_serializer=movie_dot_v1_dot_movie__pb2.GetPlaylistsForUserRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.GetPlaylistsForUserResponse.FromString,
+                '/movielist.v1.MovieListService/GetPlaylistsForUser',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForUserRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForUserResponse.FromString,
                 _registered_method=True)
         self.CreatePlaylist = channel.unary_unary(
-                '/movie.v1.MovieService/CreatePlaylist',
-                request_serializer=movie_dot_v1_dot_movie__pb2.CreatePlaylistRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.CreatePlaylistResponse.FromString,
+                '/movielist.v1.MovieListService/CreatePlaylist',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.CreatePlaylistRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.CreatePlaylistResponse.FromString,
                 _registered_method=True)
         self.RenamePlaylist = channel.unary_unary(
-                '/movie.v1.MovieService/RenamePlaylist',
-                request_serializer=movie_dot_v1_dot_movie__pb2.RenamePlaylistRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.RenamePlaylistResponse.FromString,
+                '/movielist.v1.MovieListService/RenamePlaylist',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.RenamePlaylistRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.RenamePlaylistResponse.FromString,
                 _registered_method=True)
         self.DeletePlaylist = channel.unary_unary(
-                '/movie.v1.MovieService/DeletePlaylist',
-                request_serializer=movie_dot_v1_dot_movie__pb2.DeletePlaylistRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.DeletePlaylistResponse.FromString,
+                '/movielist.v1.MovieListService/DeletePlaylist',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.DeletePlaylistRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.DeletePlaylistResponse.FromString,
                 _registered_method=True)
         self.AddMovieToPlaylist = channel.unary_unary(
-                '/movie.v1.MovieService/AddMovieToPlaylist',
-                request_serializer=movie_dot_v1_dot_movie__pb2.AddMovieToPlaylistRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.AddMovieToPlaylistResponse.FromString,
+                '/movielist.v1.MovieListService/AddMovieToPlaylist',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.AddMovieToPlaylistRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.AddMovieToPlaylistResponse.FromString,
                 _registered_method=True)
         self.RemoveMovieFromPlaylist = channel.unary_unary(
-                '/movie.v1.MovieService/RemoveMovieFromPlaylist',
-                request_serializer=movie_dot_v1_dot_movie__pb2.RemoveMovieFromPlaylistRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.RemoveMovieFromPlaylistResponse.FromString,
+                '/movielist.v1.MovieListService/RemoveMovieFromPlaylist',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.RemoveMovieFromPlaylistRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.RemoveMovieFromPlaylistResponse.FromString,
                 _registered_method=True)
-        self.CreateMovie = channel.unary_unary(
-                '/movie.v1.MovieService/CreateMovie',
-                request_serializer=movie_dot_v1_dot_movie__pb2.CreateMovieRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.CreateMovieResponse.FromString,
-                _registered_method=True)
-        self.UpdateMovie = channel.unary_unary(
-                '/movie.v1.MovieService/UpdateMovie',
-                request_serializer=movie_dot_v1_dot_movie__pb2.UpdateMovieRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.UpdateMovieResponse.FromString,
-                _registered_method=True)
-        self.DeleteMovie = channel.unary_unary(
-                '/movie.v1.MovieService/DeleteMovie',
-                request_serializer=movie_dot_v1_dot_movie__pb2.DeleteMovieRequest.SerializeToString,
-                response_deserializer=movie_dot_v1_dot_movie__pb2.DeleteMovieResponse.FromString,
+        self.GetPlaylistMovies = channel.unary_unary(
+                '/movielist.v1.MovieListService/GetPlaylistMovies',
+                request_serializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistMoviesRequest.SerializeToString,
+                response_deserializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistMoviesResponse.FromString,
                 _registered_method=True)
 
 
-class MovieServiceServicer(object):
+class MovieListServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def GetMovies(self, request, context):
+    def FilterMoviesByPlaylist(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPlaylistsForMovie(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -131,90 +132,73 @@ class MovieServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateMovie(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def UpdateMovie(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def DeleteMovie(self, request, context):
+    def GetPlaylistMovies(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_MovieServiceServicer_to_server(servicer, server):
+def add_MovieListServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetMovies': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetMovies,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.GetMoviesRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.GetMoviesResponse.SerializeToString,
+            'FilterMoviesByPlaylist': grpc.unary_unary_rpc_method_handler(
+                    servicer.FilterMoviesByPlaylist,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.FilterMoviesByPlaylistRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.FilterMoviesByPlaylistResponse.SerializeToString,
+            ),
+            'GetPlaylistsForMovie': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPlaylistsForMovie,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForMovieRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForMovieResponse.SerializeToString,
             ),
             'GetPlaylistsForUser': grpc.unary_unary_rpc_method_handler(
                     servicer.GetPlaylistsForUser,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.GetPlaylistsForUserRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.GetPlaylistsForUserResponse.SerializeToString,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForUserRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForUserResponse.SerializeToString,
             ),
             'CreatePlaylist': grpc.unary_unary_rpc_method_handler(
                     servicer.CreatePlaylist,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.CreatePlaylistRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.CreatePlaylistResponse.SerializeToString,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.CreatePlaylistRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.CreatePlaylistResponse.SerializeToString,
             ),
             'RenamePlaylist': grpc.unary_unary_rpc_method_handler(
                     servicer.RenamePlaylist,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.RenamePlaylistRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.RenamePlaylistResponse.SerializeToString,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.RenamePlaylistRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.RenamePlaylistResponse.SerializeToString,
             ),
             'DeletePlaylist': grpc.unary_unary_rpc_method_handler(
                     servicer.DeletePlaylist,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.DeletePlaylistRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.DeletePlaylistResponse.SerializeToString,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.DeletePlaylistRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.DeletePlaylistResponse.SerializeToString,
             ),
             'AddMovieToPlaylist': grpc.unary_unary_rpc_method_handler(
                     servicer.AddMovieToPlaylist,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.AddMovieToPlaylistRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.AddMovieToPlaylistResponse.SerializeToString,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.AddMovieToPlaylistRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.AddMovieToPlaylistResponse.SerializeToString,
             ),
             'RemoveMovieFromPlaylist': grpc.unary_unary_rpc_method_handler(
                     servicer.RemoveMovieFromPlaylist,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.RemoveMovieFromPlaylistRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.RemoveMovieFromPlaylistResponse.SerializeToString,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.RemoveMovieFromPlaylistRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.RemoveMovieFromPlaylistResponse.SerializeToString,
             ),
-            'CreateMovie': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateMovie,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.CreateMovieRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.CreateMovieResponse.SerializeToString,
-            ),
-            'UpdateMovie': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateMovie,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.UpdateMovieRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.UpdateMovieResponse.SerializeToString,
-            ),
-            'DeleteMovie': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteMovie,
-                    request_deserializer=movie_dot_v1_dot_movie__pb2.DeleteMovieRequest.FromString,
-                    response_serializer=movie_dot_v1_dot_movie__pb2.DeleteMovieResponse.SerializeToString,
+            'GetPlaylistMovies': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPlaylistMovies,
+                    request_deserializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistMoviesRequest.FromString,
+                    response_serializer=movielist_dot_v1_dot_movielist__pb2.GetPlaylistMoviesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'movie.v1.MovieService', rpc_method_handlers)
+            'movielist.v1.MovieListService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('movie.v1.MovieService', rpc_method_handlers)
+    server.add_registered_method_handlers('movielist.v1.MovieListService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class MovieService(object):
+class MovieListService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def GetMovies(request,
+    def FilterMoviesByPlaylist(request,
             target,
             options=(),
             channel_credentials=None,
@@ -227,9 +211,36 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/GetMovies',
-            movie_dot_v1_dot_movie__pb2.GetMoviesRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.GetMoviesResponse.FromString,
+            '/movielist.v1.MovieListService/FilterMoviesByPlaylist',
+            movielist_dot_v1_dot_movielist__pb2.FilterMoviesByPlaylistRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.FilterMoviesByPlaylistResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetPlaylistsForMovie(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/movielist.v1.MovieListService/GetPlaylistsForMovie',
+            movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForMovieRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForMovieResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -254,9 +265,9 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/GetPlaylistsForUser',
-            movie_dot_v1_dot_movie__pb2.GetPlaylistsForUserRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.GetPlaylistsForUserResponse.FromString,
+            '/movielist.v1.MovieListService/GetPlaylistsForUser',
+            movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForUserRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.GetPlaylistsForUserResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -281,9 +292,9 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/CreatePlaylist',
-            movie_dot_v1_dot_movie__pb2.CreatePlaylistRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.CreatePlaylistResponse.FromString,
+            '/movielist.v1.MovieListService/CreatePlaylist',
+            movielist_dot_v1_dot_movielist__pb2.CreatePlaylistRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.CreatePlaylistResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -308,9 +319,9 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/RenamePlaylist',
-            movie_dot_v1_dot_movie__pb2.RenamePlaylistRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.RenamePlaylistResponse.FromString,
+            '/movielist.v1.MovieListService/RenamePlaylist',
+            movielist_dot_v1_dot_movielist__pb2.RenamePlaylistRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.RenamePlaylistResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -335,9 +346,9 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/DeletePlaylist',
-            movie_dot_v1_dot_movie__pb2.DeletePlaylistRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.DeletePlaylistResponse.FromString,
+            '/movielist.v1.MovieListService/DeletePlaylist',
+            movielist_dot_v1_dot_movielist__pb2.DeletePlaylistRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.DeletePlaylistResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -362,9 +373,9 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/AddMovieToPlaylist',
-            movie_dot_v1_dot_movie__pb2.AddMovieToPlaylistRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.AddMovieToPlaylistResponse.FromString,
+            '/movielist.v1.MovieListService/AddMovieToPlaylist',
+            movielist_dot_v1_dot_movielist__pb2.AddMovieToPlaylistRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.AddMovieToPlaylistResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -389,9 +400,9 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/RemoveMovieFromPlaylist',
-            movie_dot_v1_dot_movie__pb2.RemoveMovieFromPlaylistRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.RemoveMovieFromPlaylistResponse.FromString,
+            '/movielist.v1.MovieListService/RemoveMovieFromPlaylist',
+            movielist_dot_v1_dot_movielist__pb2.RemoveMovieFromPlaylistRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.RemoveMovieFromPlaylistResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -403,7 +414,7 @@ class MovieService(object):
             _registered_method=True)
 
     @staticmethod
-    def CreateMovie(request,
+    def GetPlaylistMovies(request,
             target,
             options=(),
             channel_credentials=None,
@@ -416,63 +427,9 @@ class MovieService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/movie.v1.MovieService/CreateMovie',
-            movie_dot_v1_dot_movie__pb2.CreateMovieRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.CreateMovieResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def UpdateMovie(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/movie.v1.MovieService/UpdateMovie',
-            movie_dot_v1_dot_movie__pb2.UpdateMovieRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.UpdateMovieResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def DeleteMovie(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/movie.v1.MovieService/DeleteMovie',
-            movie_dot_v1_dot_movie__pb2.DeleteMovieRequest.SerializeToString,
-            movie_dot_v1_dot_movie__pb2.DeleteMovieResponse.FromString,
+            '/movielist.v1.MovieListService/GetPlaylistMovies',
+            movielist_dot_v1_dot_movielist__pb2.GetPlaylistMoviesRequest.SerializeToString,
+            movielist_dot_v1_dot_movielist__pb2.GetPlaylistMoviesResponse.FromString,
             options,
             channel_credentials,
             insecure,

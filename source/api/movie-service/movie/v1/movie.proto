@@ -6,6 +6,12 @@ option go_package = "movie-service/gen/go/movie;movie";
 
 service MovieService {
   rpc GetMovies(GetMoviesRequest) returns (GetMoviesResponse);
+  rpc GetPlaylistsForUser(GetPlaylistsForUserRequest) returns (GetPlaylistsForUserResponse);
+  rpc CreatePlaylist(CreatePlaylistRequest) returns (CreatePlaylistResponse);
+  rpc RenamePlaylist(RenamePlaylistRequest) returns (RenamePlaylistResponse);
+  rpc DeletePlaylist(DeletePlaylistRequest) returns (DeletePlaylistResponse);
+  rpc AddMovieToPlaylist(AddMovieToPlaylistRequest) returns (AddMovieToPlaylistResponse);
+  rpc RemoveMovieFromPlaylist(RemoveMovieFromPlaylistRequest) returns (RemoveMovieFromPlaylistResponse);
   rpc CreateMovie(CreateMovieRequest) returns (CreateMovieResponse);
   rpc UpdateMovie(UpdateMovieRequest) returns (UpdateMovieResponse);
   rpc DeleteMovie(DeleteMovieRequest) returns (DeleteMovieResponse);
@@ -41,6 +47,55 @@ message PlaylistInfo {
   string id = 1;
   string name = 2;
 }
+
+message Playlist {
+  string id = 1;
+  string name = 2;
+  int32 movies_count = 3;
+}
+
+message GetPlaylistsForUserRequest {}
+
+message GetPlaylistsForUserResponse {
+  repeated Playlist items = 1;
+}
+
+message CreatePlaylistRequest {
+  string name = 1;
+}
+
+message CreatePlaylistResponse {
+  Playlist playlist = 1;
+}
+
+message RenamePlaylistRequest {
+  string playlist_id = 1;
+  string new_name = 2;
+}
+
+message RenamePlaylistResponse {
+  Playlist playlist = 1;
+}
+
+message DeletePlaylistRequest {
+  string playlist_id = 1;
+}
+
+message DeletePlaylistResponse {}
+
+message AddMovieToPlaylistRequest {
+  string playlist_id = 1;
+  string movie_id = 2;
+}
+
+message AddMovieToPlaylistResponse {}
+
+message RemoveMovieFromPlaylistRequest {
+  string playlist_id = 1;
+  string movie_id = 2;
+}
+
+message RemoveMovieFromPlaylistResponse {}
 
 message CreateMovieRequest {
   string title = 1;

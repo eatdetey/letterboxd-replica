@@ -11,6 +11,10 @@ SERVICE_DIRS := $(addprefix api/,$(SERVICES))
 THIRD_PARTY_DIR := third-party
 GOOGLEAPIS_DIR := $(THIRD_PARTY_DIR)/googleapis
 GRPC_GATEWAY_DIR := $(THIRD_PARTY_DIR)/grpc-gateway
+MOVIE_SERVICE_PY_OUT := movie-service/grpc_layer/protobuf
+MOVIE_SERVICE_PY_PROTOS := \
+	api/movie-service/movie/v1/movie.proto \
+	api/movie-list-service/movielist/v1/movielist.proto
 
 .PHONY: all third-party third-party-prepare third-party-github third-party-clean generate lint
 
@@ -62,17 +66,14 @@ third-party-clean:
 
 generate: third-party third-party-prepare
 	@set -e; \
+	$(PYTHON) -m grpc_tools.protoc \
+		-I api/movie-service \
+		-I api/movie-list-service \
+		--python_out=$(MOVIE_SERVICE_PY_OUT) \
+		--grpc_python_out=$(MOVIE_SERVICE_PY_OUT) \
+		$(MOVIE_SERVICE_PY_PROTOS); \
 	for service in $(SERVICES); do \
-		if [ "$$service" = "movie-service" ]; then \
-			$(PYTHON) -m grpc_tools.protoc \
-				-I api/$$service \
-				--python_out=movie-service/grpc_layer/protobuf \
-				--grpc_python_out=movie-service/grpc_layer/protobuf \
-				api/$$service/movie/v1/movie.proto; \
-			$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
-		else \
-			$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
-		fi; \
+		$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
 	done
 
 lint: third-party third-party-prepare

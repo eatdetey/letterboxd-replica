@@ -19,6 +19,12 @@ def serve():
         raise RuntimeError("AUTH_ACCESS_SECRET env variable is required to start movie-service")
 
     protected_methods = {
+        "/movie.v1.MovieService/GetPlaylistsForUser",
+        "/movie.v1.MovieService/CreatePlaylist",
+        "/movie.v1.MovieService/RenamePlaylist",
+        "/movie.v1.MovieService/DeletePlaylist",
+        "/movie.v1.MovieService/AddMovieToPlaylist",
+        "/movie.v1.MovieService/RemoveMovieFromPlaylist",
         "/movie.v1.MovieService/CreateMovie",
         "/movie.v1.MovieService/UpdateMovie",
         "/movie.v1.MovieService/DeleteMovie",
