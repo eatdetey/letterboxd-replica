@@ -94,9 +94,12 @@ func (a *ServerApp) initPostgresClient(ctx context.Context) error {
 }
 
 func (a *ServerApp) initGRPCServer(ctx context.Context) error {
+	protectedMethods := func(string) bool { return true }
+
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			grpcm.RequestIdMiddleware(),
+			grpcm.AuthMiddleware([]byte(a.cfg.Auth.AccessSecret), protectedMethods),
 			grpcm.RecoveryInterceptor(a.log),
 			grpcm.LogMiddleware(a.log),
 		),

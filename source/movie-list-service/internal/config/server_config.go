@@ -13,6 +13,7 @@ type ServerConfig struct {
 	DB         settings.PostgresSettings   `mapstructure:"db"`
 	Migrate    settings.MigrateSettings    `mapstructure:"migrate"`
 	Shutdown   settings.ShutdownSettings   `mapstructure:"shutdown"`
+	Auth       settings.AuthSettings       `mapstructure:"auth"`
 }
 
 func LoadServerConfig() (*ServerConfig, error) {
@@ -47,4 +48,5 @@ func setServerDefaults(v *viper.Viper) {
 	settings.SetPostgresDefaults(v, "db")
 	settings.SetMigrateDefaults(v, "migrate")
 	settings.SetShutdownDefaults(v, "shutdown")
+	settings.SetAuthDefaults(v, "auth")
 }

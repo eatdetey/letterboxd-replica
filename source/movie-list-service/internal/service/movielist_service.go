@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/eatdetey/letterboxd-replica/source/movie-list-service/internal/repository"
+	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,25 +25,12 @@ func NewMovieListService(repo repository.PlaylistRepository, log *zap.SugaredLog
 
 // FilterMoviesByPlaylist filters candidate movie IDs by membership in a playlist.
 func (s *MovieListService) FilterMoviesByPlaylist(ctx context.Context, userID int64, playlistID string, candidateMovieIDs []string) ([]string, error) {
-	if playlistID == "" {
-		return nil, status.Error(codes.InvalidArgument, "playlist_id is required")
-	}
 	if len(candidateMovieIDs) == 0 {
 		return []string{}, nil
 	}
 
-	// Verify playlist belongs to user
-	playlist, err := s.repo.GetPlaylistByID(ctx, playlistID)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) || errors.Is(err, context.DeadlineExceeded) {
-			return nil, status.Error(codes.NotFound, "playlist not found")
-		}
-		s.log.Errorw("service.filter_movies_by_playlist.get_playlist_failed", "err", err)
-		return nil, status.Error(codes.Internal, "failed to get playlist")
-	}
-
-	if playlist.UserID != userID {
-		return nil, status.Error(codes.PermissionDenied, "access denied to playlist")
+	if _, err := s.getOwnedPlaylist(ctx, playlistID, userID); err != nil {
+		return nil, err
 	}
 
 	filteredIDs, err := s.repo.FilterMoviesByPlaylist(ctx, playlistID, candidateMovieIDs)
@@ -106,12 +94,12 @@ func (s *MovieListService) CreatePlaylist(ctx context.Context, userID int64, nam
 }
 
 // RenamePlaylist renames an existing playlist.
-func (s *MovieListService) RenamePlaylist(ctx context.Context, playlistID, newName string) (*repository.Playlist, error) {
-	if playlistID == "" {
-		return nil, status.Error(codes.InvalidArgument, "playlist_id is required")
-	}
+func (s *MovieListService) RenamePlaylist(ctx context.Context, userID int64, playlistID, newName string) (*repository.Playlist, error) {
 	if newName == "" {
 		return nil, status.Error(codes.InvalidArgument, "new_name is required")
+	}
+	if _, err := s.getOwnedPlaylist(ctx, playlistID, userID); err != nil {
+		return nil, err
 	}
 
 	playlist, err := s.repo.UpdatePlaylistName(ctx, playlistID, newName)
@@ -127,14 +115,14 @@ func (s *MovieListService) RenamePlaylist(ctx context.Context, playlistID, newNa
 }
 
 // DeletePlaylist deletes a playlist.
-func (s *MovieListService) DeletePlaylist(ctx context.Context, playlistID string) error {
-	if playlistID == "" {
-		return status.Error(codes.InvalidArgument, "playlist_id is required")
+func (s *MovieListService) DeletePlaylist(ctx context.Context, userID int64, playlistID string) error {
+	if _, err := s.getOwnedPlaylist(ctx, playlistID, userID); err != nil {
+		return err
 	}
 
 	err := s.repo.DeletePlaylist(ctx, playlistID)
 	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, pgx.ErrNoRows) {
 			return status.Error(codes.NotFound, "playlist not found")
 		}
 		s.log.Errorw("service.delete_playlist.failed", "err", err)
@@ -145,12 +133,12 @@ func (s *MovieListService) DeletePlaylist(ctx context.Context, playlistID string
 }
 
 // AddMovieToPlaylist adds a movie to a playlist.
-func (s *MovieListService) AddMovieToPlaylist(ctx context.Context, playlistID, movieID string) error {
-	if playlistID == "" {
-		return status.Error(codes.InvalidArgument, "playlist_id is required")
-	}
+func (s *MovieListService) AddMovieToPlaylist(ctx context.Context, userID int64, playlistID, movieID string) error {
 	if movieID == "" {
 		return status.Error(codes.InvalidArgument, "movie_id is required")
+	}
+	if _, err := s.getOwnedPlaylist(ctx, playlistID, userID); err != nil {
+		return err
 	}
 
 	err := s.repo.AddMovieToPlaylist(ctx, playlistID, movieID)
@@ -163,12 +151,12 @@ func (s *MovieListService) AddMovieToPlaylist(ctx context.Context, playlistID, m
 }
 
 // RemoveMovieFromPlaylist removes a movie from a playlist.
-func (s *MovieListService) RemoveMovieFromPlaylist(ctx context.Context, playlistID, movieID string) error {
-	if playlistID == "" {
-		return status.Error(codes.InvalidArgument, "playlist_id is required")
-	}
+func (s *MovieListService) RemoveMovieFromPlaylist(ctx context.Context, userID int64, playlistID, movieID string) error {
 	if movieID == "" {
 		return status.Error(codes.InvalidArgument, "movie_id is required")
+	}
+	if _, err := s.getOwnedPlaylist(ctx, playlistID, userID); err != nil {
+		return err
 	}
 
 	err := s.repo.RemoveMovieFromPlaylist(ctx, playlistID, movieID)
@@ -184,16 +172,16 @@ func (s *MovieListService) RemoveMovieFromPlaylist(ctx context.Context, playlist
 }
 
 // GetPlaylistMovies returns all movies in a playlist.
-func (s *MovieListService) GetPlaylistMovies(ctx context.Context, playlistID string, limit, offset int32) ([]string, int32, error) {
-	if playlistID == "" {
-		return nil, 0, status.Error(codes.InvalidArgument, "playlist_id is required")
-	}
-
+func (s *MovieListService) GetPlaylistMovies(ctx context.Context, userID int64, playlistID string, limit, offset int32) ([]string, int32, error) {
 	if limit <= 0 {
 		limit = 20
 	}
 	if offset < 0 {
 		offset = 0
+	}
+
+	if _, err := s.getOwnedPlaylist(ctx, playlistID, userID); err != nil {
+		return nil, 0, err
 	}
 
 	movieIDs, total, err := s.repo.GetPlaylistMovies(ctx, playlistID, limit, offset)
@@ -203,4 +191,25 @@ func (s *MovieListService) GetPlaylistMovies(ctx context.Context, playlistID str
 	}
 
 	return movieIDs, total, nil
+}
+
+func (s *MovieListService) getOwnedPlaylist(ctx context.Context, playlistID string, userID int64) (*repository.Playlist, error) {
+	if playlistID == "" {
+		return nil, status.Error(codes.InvalidArgument, "playlist_id is required")
+	}
+
+	playlist, err := s.repo.GetPlaylistByID(ctx, playlistID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, pgx.ErrNoRows) {
+			return nil, status.Error(codes.NotFound, "playlist not found")
+		}
+		s.log.Errorw("service.playlist.fetch_failed", "err", err, "playlist_id", playlistID)
+		return nil, status.Error(codes.Internal, "failed to get playlist")
+	}
+
+	if playlist.UserID != userID {
+		return nil, status.Error(codes.PermissionDenied, "access denied to playlist")
+	}
+
+	return playlist, nil
 }
