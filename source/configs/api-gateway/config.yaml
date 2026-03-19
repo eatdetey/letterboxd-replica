@@ -6,3 +6,6 @@ user_service:
 
 movie_service:
   address: "movie-service:50051"
+
+review_service:
+  address: "review-service:50054"

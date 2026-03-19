@@ -10,6 +10,12 @@ class Review(models.Model):
         max_length=255,
         verbose_name='ID пользователя'
     )
+    username = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name='Имя пользователя'
+    )
     text = models.CharField(
         max_length=1000,
         verbose_name='Текст отзыва'

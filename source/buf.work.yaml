@@ -6,5 +6,6 @@ directories:
   - api/user-service
   - api/movie-list-service
   - api/movie-service
+  - api/review-service
   - third-party/googleapis
   - third-party/grpc-gateway

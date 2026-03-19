@@ -6,6 +6,7 @@ import (
 	"time"
 
 	moviepb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/movie/v1"
+	reviewpb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/review/v1"
 	userpb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/user/v1"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/config"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/handler"
@@ -21,11 +22,13 @@ type Server struct {
 	cfg *config.Config
 	log *zap.SugaredLogger
 
-	app         *fiber.App
-	userClient  userpb.UserServiceClient
-	movieClient moviepb.MovieServiceClient
-	userConn    *grpc.ClientConn
-	movieConn   *grpc.ClientConn
+	app          *fiber.App
+	userClient   userpb.UserServiceClient
+	movieClient  moviepb.MovieServiceClient
+	reviewClient reviewpb.ReviewServiceClient
+	userConn     *grpc.ClientConn
+	movieConn    *grpc.ClientConn
+	reviewConn   *grpc.ClientConn
 }
 
 func New() (*Server, error) {
@@ -48,6 +51,9 @@ func New() (*Server, error) {
 		return nil, err
 	}
 	if err := s.initMovieClient(context.Background()); err != nil {
+		return nil, err
+	}
+	if err := s.initReviewClient(context.Background()); err != nil {
 		return nil, err
 	}
 	s.initFiber()
@@ -83,6 +89,9 @@ func (s *Server) Stop(ctx context.Context) error {
 	}
 	if s.movieConn != nil {
 		s.movieConn.Close()
+	}
+	if s.reviewConn != nil {
+		s.reviewConn.Close()
 	}
 
 	s.log.Infow("gateway.stopped")
@@ -129,6 +138,26 @@ func (s *Server) initMovieClient(ctx context.Context) error {
 	return nil
 }
 
+func (s *Server) initReviewClient(ctx context.Context) error {
+	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(
+		dialCtx,
+		s.cfg.ReviewService.Address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10*1024*1024)),
+	)
+	if err != nil {
+		return fmt.Errorf("dial review service: %w", err)
+	}
+
+	s.reviewConn = conn
+	s.reviewClient = reviewpb.NewReviewServiceClient(conn)
+	return nil
+}
+
 func (s *Server) initFiber() {
 	app := fiber.New(fiber.Config{
 		Immutable: true,
@@ -142,7 +171,8 @@ func (s *Server) initFiber() {
 
 	userHandler := handler.NewUserHandler(s.userClient)
 	movieHandler := handler.NewMovieHandler(s.movieClient)
-	router.Setup(app, userHandler, movieHandler)
+	reviewHandler := handler.NewReviewHandler(s.reviewClient)
+	router.Setup(app, userHandler, movieHandler, reviewHandler)
 
 	s.app = app
 }

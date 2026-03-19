@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	HTTP         settings.HTTPSettings         `mapstructure:"http"`
-	UserService  settings.UserServiceSettings  `mapstructure:"user_service"`
-	MovieService settings.MovieServiceSettings `mapstructure:"movie_service"`
+	HTTP          settings.HTTPSettings          `mapstructure:"http"`
+	UserService   settings.UserServiceSettings   `mapstructure:"user_service"`
+	MovieService  settings.MovieServiceSettings  `mapstructure:"movie_service"`
+	ReviewService settings.ReviewServiceSettings `mapstructure:"review_service"`
 }
 
 func Load() (*Config, error) {
@@ -44,4 +45,5 @@ func setDefaults(v *viper.Viper) {
 	settings.SetHTTPDefaults(v, "http")
 	settings.SetUserServiceDefaults(v, "user_service")
 	settings.SetMovieServiceDefaults(v, "movie_service")
+	settings.SetReviewServiceDefaults(v, "review_service")
 }

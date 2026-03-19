@@ -6,7 +6,12 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func Setup(app *fiber.App, userHandler *handler.UserHandler, movieHandler *handler.MovieHandler) {
+func Setup(
+	app *fiber.App,
+	userHandler *handler.UserHandler,
+	movieHandler *handler.MovieHandler,
+	reviewHandler *handler.ReviewHandler,
+) {
 	app.Use(middleware.RequestID())
 
 	app.Get("/healthz", func(c fiber.Ctx) error {
@@ -19,6 +24,8 @@ func Setup(app *fiber.App, userHandler *handler.UserHandler, movieHandler *handl
 	v1.Post("/auth/refresh", userHandler.Refresh)
 	v1.Get("/users", userHandler.GetUsers)
 	v1.Get("/movies", movieHandler.GetMovies)
+	v1.Get("/movies/:id/reviews", reviewHandler.GetMovieReviews)
+	v1.Post("/movies/:id/reviews", reviewHandler.AddMovieReview)
 	v1.Get("/playlists", movieHandler.GetPlaylists)
 	v1.Post("/playlists", movieHandler.CreatePlaylist)
 	v1.Put("/playlists/:id", movieHandler.RenamePlaylist)

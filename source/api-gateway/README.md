@@ -1,6 +1,6 @@
 # API Gateway
 
-HTTP шлюз на Fiber, проксирует запросы к `user-service` и `movie-service` (gRPC).
+HTTP шлюз на Fiber, проксирует запросы к `user-service`, `movie-service` и `review-service` (gRPC).
 
 ## Запуск локально
 
@@ -13,6 +13,8 @@ HTTP шлюз на Fiber, проксирует запросы к `user-service` 
      address: "user-service:50051"
    movie_service:
      address: "movie-service:50051"
+   review_service:
+     address: "review-service:50054"
    ```
 3. Запустите:
    ```bash
@@ -32,6 +34,8 @@ make generate
 - `POST /api/v1/auth/refresh` — body: `{refresh_token}`
 - `GET  /api/v1/users?ids=1,2&usernames=a,b&limit=10&offset=0`
 - `GET  /api/v1/movies?limit=20&offset=0&search=&genre=&playlist_id=&enrich_playlists=`
+- `GET  /api/v1/movies/{id}/reviews`
+- `POST /api/v1/movies/{id}/reviews` — body: `{text}`
 - `GET  /api/v1/playlists`
 - `POST /api/v1/playlists` — body: `{name}`
 - `PUT  /api/v1/playlists/{id}` — body: `{name}`

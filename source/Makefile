@@ -4,7 +4,7 @@ PYTHON ?= python3
 
 # Список сервисов для генерации/линта.
 # Записывать через пробел
-SERVICES := user-service movie-service movie-list-service
+SERVICES := user-service movie-service movie-list-service review-service
 
 SERVICE_DIRS := $(addprefix api/,$(SERVICES))
 
@@ -15,6 +15,10 @@ MOVIE_SERVICE_PY_OUT := movie-service/grpc_layer/protobuf
 MOVIE_SERVICE_PY_PROTOS := \
 	api/movie-service/movie/v1/movie.proto \
 	api/movie-list-service/movielist/v1/movielist.proto
+REVIEW_SERVICE_PY_OUT := review-service/grpc_layer/protobuf
+REVIEW_SERVICE_PY_PROTOS := \
+	api/review-service/review/v1/review.proto \
+	api/movie-service/movie/v1/movie.proto
 
 .PHONY: all third-party third-party-prepare third-party-github third-party-clean generate lint
 
@@ -72,6 +76,12 @@ generate: third-party third-party-prepare
 		--python_out=$(MOVIE_SERVICE_PY_OUT) \
 		--grpc_python_out=$(MOVIE_SERVICE_PY_OUT) \
 		$(MOVIE_SERVICE_PY_PROTOS); \
+	$(PYTHON) -m grpc_tools.protoc \
+		-I api/review-service \
+		-I api/movie-service \
+		--python_out=$(REVIEW_SERVICE_PY_OUT) \
+		--grpc_python_out=$(REVIEW_SERVICE_PY_OUT) \
+		$(REVIEW_SERVICE_PY_PROTOS); \
 	for service in $(SERVICES); do \
 		$(BUF) generate api/$$service --template api/$$service/buf.gen.yaml; \
 	done

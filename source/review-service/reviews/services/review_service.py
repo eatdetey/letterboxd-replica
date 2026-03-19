@@ -9,10 +9,11 @@ class ReviewService:
         return Review.objects.filter(movie_id=movie_id).order_by('-created_at')
 
     @staticmethod
-    def add_review(movie_id: str, user_id: str, text: str):
+    def add_review(movie_id: str, user_id: str, username: str, text: str):
         """Создать новый отзыв"""
         return Review.objects.create(
             movie_id=movie_id,
             user_id=user_id,
+            username=username or "",
             text=text
         )

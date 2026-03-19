@@ -1,120 +1,106 @@
-import grpc
-import logging
+import os
+from typing import List, Sequence, Tuple
 
-from reviews.models import Review
+import grpc
+
+from grpc_layer.context_utils import (
+    AUTHORIZATION_KEY,
+    REQUEST_ID_KEY,
+    get_auth_header_from_context,
+    get_claims_from_context,
+    get_request_id_from_context,
+)
+from grpc_layer.protobuf.movie.v1 import movie_pb2, movie_pb2_grpc
+from grpc_layer.protobuf.review.v1 import review_pb2, review_pb2_grpc
 from reviews.services.review_service import ReviewService
 
-from grpc_layer.protobuf import review_pb2, review_pb2_grpc
-from grpc_layer.protobuf import user_pb2_grpc
-from grpc_layer.protobuf.user_pb2 import GetUsersRequest
-from grpc_layer.protobuf import movie_pb2_grpc
-from grpc_layer.protobuf.movie_pb2 import MovieIdRequest
+Metadata = Sequence[Tuple[str, str]]
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-USER_SERVICE_ADDRESS = "user-service:50051"
-MOVIE_SERVICE_ADDRESS = "movie-service:50051"
+def _parse_timeout(raw_value: str) -> float:
+    try:
+        value = float(raw_value)
+    except (TypeError, ValueError):
+        return 3.0
+    if value <= 0:
+        return 3.0
+    return value
 
 
 class ReviewServiceHandler(review_pb2_grpc.ReviewServiceServicer):
+    def __init__(self):
+        self.movie_service_address = os.environ.get("MOVIE_SERVICE_ADDRESS", "movie-service:50053")
+        self.movie_service_timeout = _parse_timeout(os.environ.get("MOVIE_SERVICE_TIMEOUT_SEC", "3"))
+        self.movie_channel = grpc.insecure_channel(self.movie_service_address)
+        self.movie_stub = movie_pb2_grpc.MovieServiceStub(self.movie_channel)
 
     def GetReviews(self, request, context):
+        if not request.movie_id:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "movie_id is required")
+
         reviews = ReviewService.get_reviews(request.movie_id)
-
-        user_ids = [r.user_id for r in reviews]
-        users_map = self._get_users_by_ids(user_ids)
-
-        return review_pb2.ReviewsResponse(
-            items=[self._to_review_response(r, users_map) for r in reviews]
+        return review_pb2.GetReviewsResponse(
+            items=[self._to_review_response(item) for item in reviews],
         )
 
     def AddReview(self, request, context):
-        # Проверка существования пользователя
-        users_response = self._get_users_by_ids([request.user_id])
+        if not request.movie_id:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "movie_id is required")
 
-        if not users_response or request.user_id not in users_response:
-            context.abort(
-                grpc.StatusCode.NOT_FOUND,
-                f"User with id {request.user_id} not found"
-            )
+        text = (request.text or "").strip()
+        if not text:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "text is required")
 
-        user = users_response[request.user_id]
+        claims = get_claims_from_context(context)
+        if not claims or claims.id <= 0:
+            context.abort(grpc.StatusCode.UNAUTHENTICATED, "authorization required")
 
-        # Проверка существования фильма
-        if not self._movie_exists(request.movie_id):
-            context.abort(
-                grpc.StatusCode.NOT_FOUND,
-                f"Movie with id {request.movie_id} not found"
-            )
+        if not self._movie_exists(request.movie_id, context):
+            context.abort(grpc.StatusCode.NOT_FOUND, "movie not found")
 
         review = ReviewService.add_review(
             movie_id=request.movie_id,
-            user_id=request.user_id,
-            text=request.text
+            user_id=str(claims.id),
+            username=claims.username or "",
+            text=text,
         )
+        return review_pb2.AddReviewResponse(review=self._to_review_response(review))
 
-        return self._to_review_response(review, {request.user_id: user})
+    def _movie_exists(self, movie_id: str, context) -> bool:
+        try:
+            response = self.movie_stub.GetMovies(
+                movie_pb2.GetMoviesRequest(
+                    limit=1,
+                    offset=0,
+                    ids=[movie_id],
+                ),
+                timeout=self.movie_service_timeout,
+                metadata=self._build_movie_service_metadata(context),
+            )
+            return response.total > 0
+        except grpc.RpcError as err:
+            code = err.code() if hasattr(err, "code") else grpc.StatusCode.INTERNAL
+            details = err.details() if hasattr(err, "details") else ""
+            context.abort(code, details or "movie-service request failed")
 
-    def _to_review_response(self, review, users_map):
-        user = users_map.get(review.user_id)
-        username = user.username if user else ""
+    def _build_movie_service_metadata(self, context) -> List[Tuple[str, str]]:
+        metadata: List[Tuple[str, str]] = []
+        auth_header = get_auth_header_from_context(context)
+        if auth_header:
+            metadata.append((AUTHORIZATION_KEY, auth_header))
 
-        return review_pb2.ReviewResponse(
+        request_id = get_request_id_from_context(context)
+        if request_id:
+            metadata.append((REQUEST_ID_KEY, request_id))
+        return metadata
+
+    @staticmethod
+    def _to_review_response(review) -> review_pb2.Review:
+        return review_pb2.Review(
             id=str(review.id),
             movie_id=review.movie_id,
             user_id=review.user_id,
-            username=username,
+            username=review.username or "",
             text=review.text,
-            created_at=review.created_at.isoformat() if review.created_at else ""
+            created_at=review.created_at.isoformat() if review.created_at else "",
         )
-
-    def _get_users_by_ids(self, user_ids):
-        """Вызов user-service для получения пользователей по ID"""
-        if not user_ids:
-            return {}
-
-        try:
-            channel = grpc.insecure_channel(USER_SERVICE_ADDRESS)
-            stub = user_pb2_grpc.UserServiceStub(channel)
-
-            # Преобразуем строковые ID в int64 для user-service
-            valid_ids = []
-            for uid in user_ids:
-                try:
-                    valid_ids.append(int(uid))
-                except (ValueError, TypeError):
-                    continue
-
-            if not valid_ids:
-                return {}
-
-            response = stub.GetUsers(
-                GetUsersRequest(
-                    ids=valid_ids,
-                    limit=len(valid_ids),
-                    offset=0
-                )
-            )
-
-            # Маппинг: строковый ID -> User
-            users_map = {str(u.id): u for u in response.users}
-            return users_map
-
-        except grpc.RpcError as e:
-            print(f"gRPC error calling user-service: {e}")
-            return {}
-
-    def _movie_exists(self, movie_id: str) -> bool:
-        """Проверка существования фильма через movie-service"""
-        try:
-            channel = grpc.insecure_channel(MOVIE_SERVICE_ADDRESS)
-            stub = movie_pb2_grpc.MovieServiceStub(channel)
-
-            response = stub.MovieExists(MovieIdRequest(id=movie_id))
-            return response.exists
-
-        except grpc.RpcError as e:
-            print(f"gRPC error calling movie-service: {e}")
-            return False
