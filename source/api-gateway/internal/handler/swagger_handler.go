@@ -97,6 +97,9 @@ paths:
           name: genre
           schema: { type: string }
         - in: query
+          name: ids
+          schema: { type: string }
+        - in: query
           name: playlist_id
           schema: { type: string }
         - in: query

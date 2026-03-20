@@ -86,6 +86,9 @@ func (h *MovieHandler) GetMovies(c fiber.Ctx) error {
 	if genre := strings.TrimSpace(c.Query("genre")); genre != "" {
 		req.Genre = &genre
 	}
+	if ids := parseStrings(c.Query("ids")); len(ids) > 0 {
+		req.Ids = ids
+	}
 	if playlistID := strings.TrimSpace(c.Query("playlist_id")); playlistID != "" {
 		req.PlaylistId = &playlistID
 	}
