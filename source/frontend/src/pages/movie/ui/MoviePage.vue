@@ -19,6 +19,9 @@ const selectedPlaylistId = ref('')
 const newPlaylistName = ref('')
 const playlistActionError = ref<string | null>(null)
 const isSubmittingPlaylist = ref(false)
+const isReviewDialogOpen = ref(false)
+const reviewText = ref('')
+const reviewActionError = ref<string | null>(null)
 
 const movieId = computed(() => String(route.params.id ?? ''))
 const movie = computed(() => movieDetailsStore.item)
@@ -45,6 +48,20 @@ onMounted(() => {
 watch(movieId, (id) => {
   void loadPageData(id)
 })
+
+async function openReviewDialog() {
+  if (!authStore.isAuthenticated) {
+    await router.push({
+      name: 'login',
+      query: { redirect: route.fullPath },
+    })
+    return
+  }
+
+  reviewActionError.value = null
+  reviewText.value = ''
+  isReviewDialogOpen.value = true
+}
 
 async function openPlaylistDialog() {
   if (!authStore.isAuthenticated) {
@@ -117,6 +134,28 @@ async function createPlaylistAndAddMovie() {
     isSubmittingPlaylist.value = false
   }
 }
+
+async function submitReview() {
+  if (!movie.value) {
+    return
+  }
+
+  const text = reviewText.value.trim()
+  if (!text) {
+    reviewActionError.value = 'Review text is required'
+    return
+  }
+
+  reviewActionError.value = null
+
+  try {
+    await movieReviewsStore.createReview(movie.value.id, { text })
+    reviewText.value = ''
+    isReviewDialogOpen.value = false
+  } catch (submitError) {
+    reviewActionError.value = submitError instanceof Error ? submitError.message : 'Failed to create review'
+  }
+}
 </script>
 
 <template>
@@ -159,7 +198,7 @@ async function createPlaylistAndAddMovie() {
                 <v-btn color="white" variant="flat" class="movie-hero__primary" @click="openPlaylistDialog">
                   Add to list
                 </v-btn>
-                <v-btn color="white" variant="outlined">Write a review</v-btn>
+                <v-btn color="white" variant="outlined" @click="openReviewDialog">Write a review</v-btn>
                 <v-btn color="white" variant="outlined">Mark as watched</v-btn>
               </div>
 
@@ -263,6 +302,43 @@ async function createPlaylistAndAddMovie() {
             @click="createPlaylistAndAddMovie"
           >
             Create and add
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="isReviewDialogOpen" max-width="640">
+      <v-card class="playlist-dialog" elevation="0">
+        <h2 class="playlist-dialog__title">Write a review</h2>
+
+        <v-alert
+          v-if="reviewActionError"
+          type="error"
+          variant="tonal"
+          class="playlist-dialog__alert"
+        >
+          {{ reviewActionError }}
+        </v-alert>
+
+        <v-textarea
+          v-model="reviewText"
+          label="Your review"
+          variant="outlined"
+          rows="6"
+          auto-grow
+          hide-details
+        />
+
+        <div class="playlist-dialog__actions">
+          <v-btn variant="text" @click="isReviewDialogOpen = false">Cancel</v-btn>
+          <v-btn
+            color="white"
+            variant="flat"
+            class="playlist-dialog__submit"
+            :loading="movieReviewsStore.isSubmitting"
+            @click="submitReview"
+          >
+            Publish
           </v-btn>
         </div>
       </v-card>
