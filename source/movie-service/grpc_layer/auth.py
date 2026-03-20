@@ -21,7 +21,7 @@ def parse_token(token: str, secret: str) -> Claims:
             token,
             secret,
             algorithms=["HS256"],
-            options={"verify_aud": False},
+            options={"verify_aud": False, "verify_exp": False},
         )
     except InvalidTokenError as exc:
         raise ValueError("invalid token") from exc
