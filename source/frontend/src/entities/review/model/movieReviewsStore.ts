@@ -15,7 +15,7 @@ export const useMovieReviewsStore = defineStore('movie-reviews', () => {
     error.value = null
 
     try {
-      const api = env.useMocks ? reviewsMockApi : reviewsApi
+      const api = env.useReviewMocks ? reviewsMockApi : reviewsApi
       const response = await api.getMovieReviews(movieId)
       items.value = response.items
     } catch (loadError) {

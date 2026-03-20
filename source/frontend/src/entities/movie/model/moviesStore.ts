@@ -19,7 +19,7 @@ export const useMoviesStore = defineStore('movies', () => {
     error.value = null
 
     try {
-      const api = env.useMocks ? moviesMockApi : moviesApi
+      const api = env.useMovieMocks ? moviesMockApi : moviesApi
       const response = await api.getMovies()
       items.value = response.items
     } catch (loadError) {
