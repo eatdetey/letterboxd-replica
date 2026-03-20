@@ -6,7 +6,6 @@ import { authTokenStorage } from '@shared/api/authTokenStorage'
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUserDto | null>(authTokenStorage.getUser<AuthUserDto>())
   const accessToken = ref<string | null>(authTokenStorage.getAccessToken())
-  const refreshToken = ref<string | null>(authTokenStorage.getRefreshToken())
   const isReady = ref(false)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -14,14 +13,13 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value && !!accessToken.value)
 
   const username = computed(() => user.value?.username ?? '')
-  const userId = computed(() => user.value?.id ?? '')
+  const userId = computed(() => (user.value?.id ? String(user.value.id) : ''))
   const role = computed(() => user.value?.role ?? null)
 
-  function setSession(nextUser: AuthUserDto, access: string, refresh: string) {
+  function setSession(nextUser: AuthUserDto, access: string) {
     user.value = nextUser
     accessToken.value = access
-    refreshToken.value = refresh
-    authTokenStorage.setSession(nextUser, access, refresh)
+    authTokenStorage.setSession(nextUser, access)
   }
 
   async function login(payload: { username: string; password: string }) {
@@ -32,13 +30,8 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.login(payload)
 
       setSession(
-        {
-          id: response.id,
-          username: response.username,
-          role: response.role,
-        },
-        response.tokens.access,
-        response.tokens.refresh,
+        response.user,
+        response.access_token,
       )
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Login failed'
@@ -56,13 +49,8 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.register(payload)
 
       setSession(
-        {
-          id: response.id,
-          username: response.username,
-          role: response.role,
-        },
-        response.tokens.access,
-        response.tokens.refresh,
+        response.user,
+        response.access_token,
       )
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Register failed'
@@ -73,46 +61,36 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function refresh() {
-    if (!refreshToken.value) {
-      throw new Error('No refresh token')
-    }
+    const response = await authApi.refresh()
 
-    const response = await authApi.refresh({
-      refresh_token: refreshToken.value,
-    })
-
-    accessToken.value = response.access
-    refreshToken.value = response.refresh
+    accessToken.value = response.access_token
 
     if (user.value) {
-      authTokenStorage.setSession(user.value, response.access, response.refresh)
+      authTokenStorage.setSession(user.value, response.access_token)
     }
 
-    return response.access
+    return response.access_token
   }
 
   function logout() {
     user.value = null
     accessToken.value = null
-    refreshToken.value = null
     authTokenStorage.clearSession()
   }
 
   async function init() {
-    if (!refreshToken.value) {
+    if (!accessToken.value) {
       isReady.value = true
       return
     }
 
     try {
-      if (!accessToken.value) {
-        await refresh()
-      } else if (!user.value) {
+      if (!user.value) {
         const storedUser = authTokenStorage.getUser<AuthUserDto>()
         if (storedUser) {
           user.value = storedUser
         } else {
-          await refresh()
+          logout()
         }
       }
     } catch {
@@ -125,7 +103,6 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user,
     accessToken,
-    refreshToken,
     isReady,
     isLoading,
     error,
