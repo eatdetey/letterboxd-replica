@@ -12,7 +12,9 @@ class MovieService:
         if genre:
             queryset = queryset.filter(genres__name=genre)
 
-        if ids:
+        # Preserve semantic difference between "no ids filter" (None)
+        # and "ids filter resolved to empty set" ([]).
+        if ids is not None:
             queryset = queryset.filter(id__in=ids)
 
         return queryset.distinct().order_by("id")
