@@ -582,10 +582,12 @@ async function submitReview() {
   display: grid;
   place-items: center;
   text-align: center;
-  color: var(--text-secondary);
-  border: 1px dashed rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   padding: 20px;
+  font-weight: 600;
 }
 
 @media (max-width: 960px) {

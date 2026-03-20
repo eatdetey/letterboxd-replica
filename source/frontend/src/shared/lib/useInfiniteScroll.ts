@@ -10,6 +10,7 @@ type UseInfiniteScrollOptions = {
 export function useInfiniteScroll(options: UseInfiniteScrollOptions) {
   let observer: IntersectionObserver | null = null
   let isHandlingIntersection = false
+  let isTargetIntersecting = false
 
   function disconnect() {
     observer?.disconnect()
@@ -33,13 +34,21 @@ export function useInfiniteScroll(options: UseInfiniteScrollOptions) {
     observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
-        if (!entry?.isIntersecting || !options.enabled.value || isHandlingIntersection) {
+        isTargetIntersecting = Boolean(entry?.isIntersecting)
+
+        if (!isTargetIntersecting || !options.enabled.value || isHandlingIntersection) {
           return
         }
 
         isHandlingIntersection = true
         Promise.resolve(options.onLoadMore()).finally(() => {
           isHandlingIntersection = false
+
+          // Re-arm observer so infinite loading continues even when the sentinel
+          // stays inside viewport after the previous batch render.
+          if (options.enabled.value && isTargetIntersecting) {
+            void observe()
+          }
         })
       },
       {
