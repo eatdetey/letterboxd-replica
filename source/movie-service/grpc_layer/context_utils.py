@@ -20,6 +20,10 @@ def _find_metadata_value(metadata: Optional[Iterable]) -> str:
 
 
 def get_auth_header_from_context(context: grpc.ServicerContext) -> str:
+    # First try to get from context attributes (set by auth interceptor)
+    if hasattr(context, "_auth_header"):
+        return getattr(context, "_auth_header", "")
+    # Fallback to invocation metadata
     return _find_metadata_value(context.invocation_metadata())
 
 
