@@ -120,6 +120,25 @@ func (h *UserHandler) Refresh(c fiber.Ctx) error {
 	})
 }
 
+func (h *UserHandler) Logout(c fiber.Ctx) error {
+	refreshToken := c.Cookies("refresh_token")
+	if refreshToken != "" {
+		reqID, _ := c.Locals("request_id").(string)
+		ctx := grpcctx.FromFiber(c, reqID)
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		if _, err := h.client.Logout(ctx, &userpb.LogoutRequest{
+			RefreshToken: refreshToken,
+		}); err != nil {
+			return grpcErrorToFiber(err)
+		}
+	}
+
+	clearRefreshCookie(c)
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
 func (h *UserHandler) GetUsers(c fiber.Ctx) error {
 	var reqBody getUsersRequest
 	if err := c.Bind().Body(&reqBody); err != nil {
@@ -239,5 +258,17 @@ func setRefreshCookie(c fiber.Ctx, refreshToken string) {
 		Path:     "/",
 		HTTPOnly: true,
 		SameSite: "Lax",
+	})
+}
+
+func clearRefreshCookie(c fiber.Ctx) {
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Path:     "/",
+		HTTPOnly: true,
+		SameSite: "Lax",
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
 	})
 }

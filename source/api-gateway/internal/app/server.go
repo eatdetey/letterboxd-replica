@@ -10,6 +10,7 @@ import (
 	userpb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/user/v1"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/config"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/handler"
+	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/middleware"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/router"
 	"github.com/eatdetey/letterboxd-replica/source/go-common/pkg/logger"
 	"github.com/gofiber/fiber/v3"
@@ -179,7 +180,8 @@ func (s *Server) initFiber() {
 	userHandler := handler.NewUserHandler(s.userClient)
 	movieHandler := handler.NewMovieHandler(s.movieClient)
 	reviewHandler := handler.NewReviewHandler(s.reviewClient)
-	router.Setup(app, userHandler, movieHandler, reviewHandler)
+	authRequired := middleware.BearerAuth([]byte(s.cfg.Auth.AccessSecret))
+	router.Setup(app, userHandler, movieHandler, reviewHandler, authRequired)
 
 	s.app = app
 }
