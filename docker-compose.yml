@@ -150,6 +150,18 @@ services:
       - "8080:8080"
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./source/frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - api-gateway
+    environment:
+      - API_URL=http://api-gateway:8080
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
 volumes:
   user-db-data:
   movie-db-data:

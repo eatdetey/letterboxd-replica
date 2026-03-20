@@ -3,6 +3,7 @@ import type {
   UserProfileResponseDto,
 } from '../model/types'
 
+
 export const userProfileApi = {
   getProfile(idOrUsername: string): Promise<UserProfileResponseDto> {
     const encoded = encodeURIComponent(idOrUsername)

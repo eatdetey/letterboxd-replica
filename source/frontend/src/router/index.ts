@@ -47,7 +47,7 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, _from) => {
   const authStore = useAuthStore()
 
   if (!authStore.isReady) {

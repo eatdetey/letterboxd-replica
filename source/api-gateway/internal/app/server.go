@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	moviepb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/movie/v1"
@@ -155,11 +154,24 @@ func (s *Server) initFiber() {
 	})
 
 	corsCfg := s.cfg.HTTP.CORS
+	allowOrigins := corsCfg.AllowOrigins
+	if len(allowOrigins) == 0 {
+		allowOrigins = []string{"*"}
+	}
+	allowMethods := corsCfg.AllowMethods
+	if len(allowMethods) == 0 {
+		allowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
+	}
+	allowHeaders := corsCfg.AllowHeaders
+	if len(allowHeaders) == 0 {
+		allowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
+	}
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     joinOrDefault(corsCfg.AllowOrigins, "*"),
-		AllowMethods:     joinOrDefault(corsCfg.AllowMethods, "GET,POST,PUT,PATCH,DELETE,OPTIONS"),
-		AllowHeaders:     joinOrDefault(corsCfg.AllowHeaders, "Origin,Content-Type,Accept,Authorization"),
-		ExposeHeaders:    strings.Join(corsCfg.ExposeHeaders, ","),
+		AllowOrigins:     allowOrigins,
+		AllowMethods:     allowMethods,
+		AllowHeaders:     allowHeaders,
+		ExposeHeaders:    corsCfg.ExposeHeaders,
 		AllowCredentials: corsCfg.AllowCredentials,
 		MaxAge:           corsCfg.MaxAge,
 	}))
@@ -170,11 +182,4 @@ func (s *Server) initFiber() {
 	router.Setup(app, userHandler, movieHandler, reviewHandler)
 
 	s.app = app
-}
-
-func joinOrDefault(values []string, fallback string) string {
-	if len(values) == 0 {
-		return fallback
-	}
-	return strings.Join(values, ",")
 }
