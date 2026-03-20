@@ -279,8 +279,8 @@ async function submitReview() {
             <v-progress-circular indeterminate size="24" width="2" color="white" />
           </div>
 
-          <div v-if="!reviews.length" class="movie-page__empty">
-            Пока нет отзывов для этого фильма.
+          <div v-if="!reviews.length" class="reviews-section__empty">
+            No reviews yet for this film.
           </div>
         </section>
       </template>
@@ -575,6 +575,17 @@ async function submitReview() {
   min-height: 80px;
   display: grid;
   place-items: center;
+}
+
+.reviews-section__empty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--text-secondary);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 20px;
 }
 
 @media (max-width: 960px) {
