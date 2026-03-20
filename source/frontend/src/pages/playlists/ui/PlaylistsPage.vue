@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlaylistsStore } from '~/entities/playlist/model/playlistsStore'
 import PlaylistCard from '~/entities/playlist/ui/PlaylistCard.vue'
+import { useInfiniteScroll } from '@shared/lib/useInfiniteScroll'
+
+const PLAYLISTS_BATCH_SIZE = 12
 
 const playlistsBackdropUrl =
   'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1600&q=80'
@@ -12,13 +15,49 @@ const playlistsStore = usePlaylistsStore()
 const isCreateDialogOpen = ref(false)
 const playlistName = ref('')
 const createError = ref<string | null>(null)
+const visiblePlaylistsCount = ref(PLAYLISTS_BATCH_SIZE)
+const loadMoreSentinel = ref<HTMLElement | null>(null)
 
 onMounted(() => {
+  visiblePlaylistsCount.value = PLAYLISTS_BATCH_SIZE
   void playlistsStore.loadPlaylists()
 })
 
 const playlists = computed(() => playlistsStore.items)
+const visiblePlaylists = computed(() => playlists.value.slice(0, visiblePlaylistsCount.value))
 const totalMovies = computed(() => playlistsStore.totalMovies)
+const hasMorePlaylists = computed(() => playlists.value.length > visiblePlaylistsCount.value)
+const canLoadMorePlaylists = computed(() => hasMorePlaylists.value && !playlistsStore.isLoading)
+
+function loadMorePlaylists() {
+  if (!canLoadMorePlaylists.value) {
+    return
+  }
+
+  visiblePlaylistsCount.value += PLAYLISTS_BATCH_SIZE
+}
+
+watch(() => playlists.value.length, (length, previousLength) => {
+  if (length === 0) {
+    visiblePlaylistsCount.value = PLAYLISTS_BATCH_SIZE
+    return
+  }
+
+  if (previousLength === 0) {
+    visiblePlaylistsCount.value = Math.min(PLAYLISTS_BATCH_SIZE, length)
+    return
+  }
+
+  if (visiblePlaylistsCount.value > length) {
+    visiblePlaylistsCount.value = length
+  }
+})
+
+useInfiniteScroll({
+  target: loadMoreSentinel,
+  enabled: canLoadMorePlaylists,
+  onLoadMore: loadMorePlaylists,
+})
 
 async function createPlaylist() {
   const name = playlistName.value.trim()
@@ -82,7 +121,7 @@ async function createPlaylist() {
 
         <v-row v-else-if="playlists.length">
           <v-col
-            v-for="playlist in playlists"
+            v-for="playlist in visiblePlaylists"
             :key="playlist.id"
             cols="12"
             sm="6"
@@ -92,7 +131,15 @@ async function createPlaylist() {
           </v-col>
         </v-row>
 
-        <div v-else class="playlists-page__empty">
+        <div
+          v-if="playlists.length && hasMorePlaylists"
+          ref="loadMoreSentinel"
+          class="playlists-page__load-more"
+        >
+          <v-progress-circular indeterminate size="24" width="2" color="white" />
+        </div>
+
+        <div v-if="!playlistsStore.isLoading && !playlistsStore.error && !playlists.length" class="playlists-page__empty">
           Пока нет пользовательских списков.
         </div>
       </v-container>
@@ -241,6 +288,12 @@ async function createPlaylist() {
   display: grid;
   place-items: center;
   color: var(--text-muted);
+}
+
+.playlists-page__load-more {
+  min-height: 80px;
+  display: grid;
+  place-items: center;
 }
 
 .playlists-page__alert {

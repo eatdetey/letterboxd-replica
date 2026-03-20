@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useMoviesStore } from '~/entities/movie/model/moviesStore'
 import MovieCard from '~/entities/movie/ui/MovieCard.vue'
+import { useInfiniteScroll } from '@shared/lib/useInfiniteScroll'
 
 const heroBackdropUrl =
   'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=1600&q=80'
 
 const moviesStore = useMoviesStore()
+const loadMoreSentinel = ref<HTMLElement | null>(null)
 
 onMounted(() => {
   void moviesStore.loadMovies()
@@ -14,6 +16,16 @@ onMounted(() => {
 
 const featured = computed(() => moviesStore.featured)
 const allMovies = computed(() => moviesStore.all)
+const showLoadMoreAnchor = computed(() => moviesStore.hasMore && !moviesStore.error)
+const canLoadMoreMovies = computed(() => {
+  return showLoadMoreAnchor.value && !moviesStore.isLoading && !moviesStore.isLoadingMore
+})
+
+useInfiniteScroll({
+  target: loadMoreSentinel,
+  enabled: canLoadMoreMovies,
+  onLoadMore: () => moviesStore.loadMoreMovies(),
+})
 </script>
 
 <template>
@@ -62,7 +74,11 @@ const allMovies = computed(() => moviesStore.all)
           </div>
         </div>
 
-        <v-row>
+        <div v-if="moviesStore.isLoading && !allMovies.length" class="section__state">
+          <v-progress-circular indeterminate color="white" />
+        </div>
+
+        <v-row v-else-if="allMovies.length">
           <v-col
             v-for="movie in allMovies"
             :key="movie.id"
@@ -74,6 +90,16 @@ const allMovies = computed(() => moviesStore.all)
             <MovieCard :movie="movie" />
           </v-col>
         </v-row>
+
+        <div v-if="showLoadMoreAnchor" ref="loadMoreSentinel" class="section__load-more">
+          <v-progress-circular
+            v-if="moviesStore.isLoadingMore"
+            indeterminate
+            size="24"
+            width="2"
+            color="white"
+          />
+        </div>
 
         <div class="section__empty" v-if="!moviesStore.isLoading && !allMovies.length">
           Пока нет фильмов для отображения.
@@ -222,6 +248,20 @@ const allMovies = computed(() => moviesStore.all)
   text-align: center;
   color: var(--text-muted);
   padding: 48px 0;
+}
+
+.section__state,
+.section__load-more {
+  display: grid;
+  place-items: center;
+}
+
+.section__state {
+  min-height: 260px;
+}
+
+.section__load-more {
+  min-height: 80px;
 }
 
 @media (max-width: 960px) {
