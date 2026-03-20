@@ -40,17 +40,22 @@ class AuthInterceptor(ServerInterceptor):
 
         def wrap_unary_unary(request, context):
             header = _find_auth_header(handler_call_details.invocation_metadata)
+            print(f"DEBUG: method={method}, header_present={bool(header)}, header_prefix={header[:20] if header else 'None'}")
             token = self._extract_bearer(header)
             if not token:
+                print(f"DEBUG: No token found in header")
                 context.abort(StatusCode.UNAUTHENTICATED, "unauthorized")
 
             try:
                 claims = parse_token(token, self.secret)
-            except ValueError:
+                print(f"DEBUG: Token parsed successfully, user={claims.username}")
+            except ValueError as e:
+                print(f"DEBUG: Token parse failed: {e}")
                 context.abort(StatusCode.UNAUTHENTICATED, "unauthorized")
                 return None  # pragma: no cover
 
             setattr(context, "claims", claims)
+            setattr(context, "_auth_header", header)
             return handler.unary_unary(request, context)
 
         if handler.unary_unary:

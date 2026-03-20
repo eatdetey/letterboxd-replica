@@ -30,6 +30,8 @@ func FromFiber(c fiber.Ctx, reqID string) context.Context {
 
 	if header := c.Get(authorizationHeader); header != "" {
 		md.Set(ctxmetadata.AuthorizationKey, header)
+	} else {
+		// Debug: log that header is missing
 	}
 
 	return metadata.NewOutgoingContext(ctx, md)

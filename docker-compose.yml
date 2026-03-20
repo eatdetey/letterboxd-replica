@@ -91,6 +91,7 @@ services:
     environment:
       - CONFIG_PATH=/etc/movie-list-service/config.yaml
       - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-list-db:5432/postgres?sslmode=disable
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
     volumes:
       - ./source/configs/movie-list-service/config.yaml:/etc/movie-list-service/config.yaml:ro
     ports:
@@ -118,15 +119,18 @@ services:
       context: ./source/review-service
       dockerfile: Dockerfile
     depends_on:
-      movie-list-db:
+      review-db:
         condition: service_healthy
     environment:
       - CONFIG_PATH=/etc/review-service/config.yaml
       - DB_CONNECTION_STRING=postgres://postgres:postgres@review-db:5432/postgres?sslmode=disable
+      - REVIEW_SERVICE_PORT=50054
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
     volumes:
       - ./source/configs/review-service/config.yaml:/etc/review-service/config.yaml:ro
     ports:
-      - "50054:50054"
+      - "50054:50051"
+    restart: unless-stopped
 
   api-gateway:
     build:
@@ -138,7 +142,8 @@ services:
     environment:
       - CONFIG_PATH=/etc/api-gateway/config.yaml
       - USER_SERVICE_ADDRESS=user-service:50051
-      - MOVIE_SERVICE_ADDRESS=movie-service:50051
+      - MOVIE_SERVICE_ADDRESS=movie-service:50053
+      - MOVIE_LIST_SERVICE_ADDRESS=movie-list-service:50051
     volumes:
       - ./source/configs/api-gateway/config.yaml:/etc/api-gateway/config.yaml:ro
     ports:
