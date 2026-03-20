@@ -56,11 +56,6 @@ watch(profileId, (id) => {
 
             <div class="profile-card__grid">
               <div class="profile-field">
-                <div class="profile-field__label">ID</div>
-                <div class="profile-field__value">{{ user.id }}</div>
-              </div>
-
-              <div class="profile-field">
                 <div class="profile-field__label">Username</div>
                 <div class="profile-field__value">{{ user.username }}</div>
               </div>
@@ -68,11 +63,6 @@ watch(profileId, (id) => {
               <div class="profile-field">
                 <div class="profile-field__label">Email</div>
                 <div class="profile-field__value">{{ user.email || 'Not provided' }}</div>
-              </div>
-
-              <div class="profile-field">
-                <div class="profile-field__label">Role</div>
-                <div class="profile-field__value">{{ user.role || 'user' }}</div>
               </div>
             </div>
           </div>
