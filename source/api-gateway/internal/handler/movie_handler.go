@@ -8,6 +8,8 @@ import (
 	moviepb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/movie/v1"
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/transport/grpcctx"
 	"github.com/gofiber/fiber/v3"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -142,12 +144,22 @@ func (h *MovieHandler) GetMovieByID(c fiber.Ctx) error {
 	ctx, cancel := buildGRPCContext(c)
 	defer cancel()
 
-	resp, err := h.client.GetMovies(ctx, &moviepb.GetMoviesRequest{
+	shouldEnrichPlaylists := strings.TrimSpace(c.Get(fiber.HeaderAuthorization)) != ""
+	req := &moviepb.GetMoviesRequest{
 		Limit:           1,
 		Offset:          0,
 		Ids:             []string{movieID},
-		EnrichPlaylists: true,
-	})
+		EnrichPlaylists: shouldEnrichPlaylists,
+	}
+
+	resp, err := h.client.GetMovies(ctx, req)
+	if err != nil && shouldEnrichPlaylists {
+		// Public movie details should remain accessible even with stale/invalid token.
+		if status.Code(err) == codes.Unauthenticated {
+			req.EnrichPlaylists = false
+			resp, err = h.client.GetMovies(ctx, req)
+		}
+	}
 	if err != nil {
 		return grpcErrorToFiber(err)
 	}

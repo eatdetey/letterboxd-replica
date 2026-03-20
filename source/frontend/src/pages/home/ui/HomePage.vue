@@ -1,55 +1,133 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useMoviesStore } from '~/entities/movie/model/moviesStore'
 import MovieCard from '~/entities/movie/ui/MovieCard.vue'
+import { useInfiniteScroll } from '@shared/lib/useInfiniteScroll'
+import { env } from '@shared/config/env'
+import { moviesApi } from '~/entities/movie/api/moviesApi'
+import { moviesMockApi } from '~/entities/movie/api/moviesMockApi'
+import type { MovieDto } from '~/entities/movie/model/types'
 
 const heroBackdropUrl =
   'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=1600&q=80'
+const HERO_ROTATION_INTERVAL_MS = 20_000
 
 const moviesStore = useMoviesStore()
+const loadMoreSentinel = ref<HTMLElement | null>(null)
+const heroMovie = ref<MovieDto | null>(null)
+const heroOffset = ref(0)
+const movieApi = env.useMovieMocks ? moviesMockApi : moviesApi
+let heroTimer: number | undefined
+let isHeroRotationActive = false
+
+function clearHeroTimer() {
+  if (heroTimer !== undefined) {
+    window.clearTimeout(heroTimer)
+    heroTimer = undefined
+  }
+}
+
+function scheduleHeroRefresh() {
+  if (!isHeroRotationActive) {
+    return
+  }
+
+  clearHeroTimer()
+  heroTimer = window.setTimeout(() => {
+    void loadNextHeroMovie()
+  }, HERO_ROTATION_INTERVAL_MS)
+}
+
+async function loadNextHeroMovie() {
+  try {
+    const offset = heroOffset.value
+    const response = await movieApi.getMovies({
+      limit: 1,
+      offset,
+    })
+
+    if (!response.items.length) {
+      heroOffset.value = 0
+      return
+    }
+
+    const nextMovie = response.items[0]
+    if (!nextMovie) {
+      return
+    }
+
+    heroMovie.value = nextMovie
+    heroOffset.value = offset + 1
+  } catch {
+    // Keep currently shown hero movie and retry on next interval.
+  } finally {
+    if (isHeroRotationActive) {
+      scheduleHeroRefresh()
+    }
+  }
+}
 
 onMounted(() => {
+  isHeroRotationActive = true
   void moviesStore.loadMovies()
+  void loadNextHeroMovie()
 })
 
-const featured = computed(() => moviesStore.featured)
+onBeforeUnmount(() => {
+  isHeroRotationActive = false
+  clearHeroTimer()
+})
+
+const featured = computed(() => heroMovie.value ?? moviesStore.featured)
 const allMovies = computed(() => moviesStore.all)
+const showLoadMoreAnchor = computed(() => moviesStore.hasMore && !moviesStore.error)
+const canLoadMoreMovies = computed(() => {
+  return showLoadMoreAnchor.value && !moviesStore.isLoading && !moviesStore.isLoadingMore
+})
+
+useInfiniteScroll({
+  target: loadMoreSentinel,
+  enabled: canLoadMoreMovies,
+  onLoadMore: () => moviesStore.loadMoreMovies(),
+})
 </script>
 
 <template>
   <div class="home-page">
-    <section class="hero" v-if="featured">
-      <div class="hero__backdrop" :style="{ backgroundImage: `url(${heroBackdropUrl})` }"></div>
-      <v-container class="hero__content">
-        <div class="hero__grid">
-          <div class="hero__copy">
-            <div class="hero__badge">Now showing</div>
-            <h1 class="hero__title">{{ featured.title }}</h1>
-            <p class="hero__description">{{ featured.description }}</p>
-            <div class="hero__meta">
-              <span>{{ featured.release_year }}</span>
-              <span class="dot">•</span>
-              <span>{{ featured.genres.join(', ') }}</span>
+    <Transition name="hero-fade" mode="out-in">
+      <section class="hero" v-if="featured" :key="featured.id">
+        <div class="hero__backdrop" :style="{ backgroundImage: `url(${heroBackdropUrl})` }"></div>
+        <v-container class="hero__content">
+          <div class="hero__grid">
+            <div class="hero__copy">
+              <div class="hero__badge">Now showing</div>
+              <h1 class="hero__title">{{ featured.title }}</h1>
+              <p class="hero__description">{{ featured.description }}</p>
+              <div class="hero__meta">
+                <span>{{ featured.release_year }}</span>
+                <span class="dot">•</span>
+                <span>{{ featured.genres.join(', ') }}</span>
+              </div>
+              <div class="hero__actions">
+                <v-btn
+                  color="white"
+                  variant="flat"
+                  class="hero__primary"
+                  :to="{ name: 'movie', params: { id: featured.id } }"
+                >
+                  View details
+                </v-btn>
+              </div>
             </div>
-            <div class="hero__actions">
-              <v-btn
-                color="white"
-                variant="flat"
-                class="hero__primary"
-                :to="{ name: 'movie', params: { id: featured.id } }"
-              >
-                View details
-              </v-btn>
-            </div>
-          </div>
 
-          <div
-            class="hero__poster"
-            :style="{ backgroundImage: featured.poster_url ? `url(${featured.poster_url})` : undefined }"
-          ></div>
-        </div>
-      </v-container>
-    </section>
+            <div
+              class="hero__poster"
+              :style="{ backgroundImage: featured.poster_url ? `url(${featured.poster_url})` : undefined }"
+            ></div>
+          </div>
+        </v-container>
+      </section>
+    </Transition>
 
     <section class="section">
       <v-container>
@@ -62,7 +140,11 @@ const allMovies = computed(() => moviesStore.all)
           </div>
         </div>
 
-        <v-row>
+        <div v-if="moviesStore.isLoading && !allMovies.length" class="section__state">
+          <v-progress-circular indeterminate color="white" />
+        </div>
+
+        <v-row v-else-if="allMovies.length">
           <v-col
             v-for="movie in allMovies"
             :key="movie.id"
@@ -74,6 +156,16 @@ const allMovies = computed(() => moviesStore.all)
             <MovieCard :movie="movie" />
           </v-col>
         </v-row>
+
+        <div v-if="showLoadMoreAnchor" ref="loadMoreSentinel" class="section__load-more">
+          <v-progress-circular
+            v-if="moviesStore.isLoadingMore"
+            indeterminate
+            size="24"
+            width="2"
+            color="white"
+          />
+        </div>
 
         <div class="section__empty" v-if="!moviesStore.isLoading && !allMovies.length">
           Пока нет фильмов для отображения.
@@ -88,6 +180,17 @@ const allMovies = computed(() => moviesStore.all)
   display: grid;
   gap: 64px;
   padding-bottom: 64px;
+}
+
+.hero-fade-enter-active,
+.hero-fade-leave-active {
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+.hero-fade-enter-from,
+.hero-fade-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .hero {
@@ -222,6 +325,20 @@ const allMovies = computed(() => moviesStore.all)
   text-align: center;
   color: var(--text-muted);
   padding: 48px 0;
+}
+
+.section__state,
+.section__load-more {
+  display: grid;
+  place-items: center;
+}
+
+.section__state {
+  min-height: 260px;
+}
+
+.section__load-more {
+  min-height: 80px;
 }
 
 @media (max-width: 960px) {

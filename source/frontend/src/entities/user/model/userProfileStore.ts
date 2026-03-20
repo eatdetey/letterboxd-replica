@@ -38,6 +38,7 @@ export const useUserProfileStore = defineStore('userProfile', () => {
         id: String(currentUser.id),
         username: currentUser.username,
         email: currentUser.email,
+        avatar_url: currentUser.avatar_url,
         role: currentUser.role as UserProfileDto['role'],
       }
     } catch (loadError) {

@@ -7,6 +7,9 @@ import { useMovieReviewsStore } from '~/entities/review/model/movieReviewsStore'
 import { playlistsApi } from '~/entities/playlist/api/playlistsApi'
 import { usePlaylistsStore } from '~/entities/playlist/model/playlistsStore'
 import ReviewCard from '~/entities/review/ui/ReviewCard.vue'
+import { useInfiniteScroll } from '@shared/lib/useInfiniteScroll'
+
+const REVIEWS_BATCH_SIZE = 10
 
 const route = useRoute()
 const router = useRouter()
@@ -22,13 +25,18 @@ const isSubmittingPlaylist = ref(false)
 const isReviewDialogOpen = ref(false)
 const reviewText = ref('')
 const reviewActionError = ref<string | null>(null)
+const visibleReviewsCount = ref(REVIEWS_BATCH_SIZE)
+const reviewsLoadMoreSentinel = ref<HTMLElement | null>(null)
 
 const movieId = computed(() => String(route.params.id ?? ''))
 const movie = computed(() => movieDetailsStore.item)
 const playlists = computed(() => movieDetailsStore.playlists)
 const reviews = computed(() => movieReviewsStore.items)
+const visibleReviews = computed(() => reviews.value.slice(0, visibleReviewsCount.value))
 const isLoading = computed(() => movieDetailsStore.isLoading || movieReviewsStore.isLoading)
 const error = computed(() => movieDetailsStore.error || movieReviewsStore.error)
+const hasMoreReviews = computed(() => reviews.value.length > visibleReviewsCount.value)
+const canLoadMoreReviews = computed(() => hasMoreReviews.value && !movieReviewsStore.isLoading)
 
 async function loadPageData(id: string) {
   if (!id) {
@@ -46,7 +54,38 @@ onMounted(() => {
 })
 
 watch(movieId, (id) => {
+  visibleReviewsCount.value = REVIEWS_BATCH_SIZE
   void loadPageData(id)
+})
+
+watch(() => reviews.value.length, (length, previousLength) => {
+  if (length === 0) {
+    visibleReviewsCount.value = REVIEWS_BATCH_SIZE
+    return
+  }
+
+  if (previousLength === 0) {
+    visibleReviewsCount.value = Math.min(REVIEWS_BATCH_SIZE, length)
+    return
+  }
+
+  if (visibleReviewsCount.value > length) {
+    visibleReviewsCount.value = length
+  }
+})
+
+function loadMoreReviews() {
+  if (!canLoadMoreReviews.value) {
+    return
+  }
+
+  visibleReviewsCount.value += REVIEWS_BATCH_SIZE
+}
+
+useInfiniteScroll({
+  target: reviewsLoadMoreSentinel,
+  enabled: canLoadMoreReviews,
+  onLoadMore: loadMoreReviews,
 })
 
 async function openReviewDialog() {
@@ -226,13 +265,21 @@ async function submitReview() {
 
           <div v-if="reviews.length" class="reviews-section__list">
             <ReviewCard
-              v-for="review in reviews"
+              v-for="review in visibleReviews"
               :key="review.id"
               :review="review"
             />
           </div>
 
-          <div v-else class="movie-page__empty">
+          <div
+            v-if="reviews.length && hasMoreReviews"
+            ref="reviewsLoadMoreSentinel"
+            class="reviews-section__load-more"
+          >
+            <v-progress-circular indeterminate size="24" width="2" color="white" />
+          </div>
+
+          <div v-if="!reviews.length" class="movie-page__empty">
             Пока нет отзывов для этого фильма.
           </div>
         </section>
@@ -522,6 +569,12 @@ async function submitReview() {
 .reviews-section__list {
   display: grid;
   gap: 16px;
+}
+
+.reviews-section__load-more {
+  min-height: 80px;
+  display: grid;
+  place-items: center;
 }
 
 @media (max-width: 960px) {

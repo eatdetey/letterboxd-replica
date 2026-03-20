@@ -5,6 +5,7 @@ import MovieCard from '~/entities/movie/ui/MovieCard.vue'
 import { usePlaylistMoviesStore } from '~/entities/movie/model/playlistMoviesStore'
 import { playlistsApi } from '~/entities/playlist/api/playlistsApi'
 import { usePlaylistsStore } from '~/entities/playlist/model/playlistsStore'
+import { useInfiniteScroll } from '@shared/lib/useInfiniteScroll'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,10 +16,15 @@ const isDeleteDialogOpen = ref(false)
 const playlistName = ref('')
 const actionError = ref<string | null>(null)
 const activeMovieId = ref<string | null>(null)
+const loadMoreSentinel = ref<HTMLElement | null>(null)
 
 const playlistId = computed(() => String(route.params.id ?? ''))
 const playlist = computed(() => {
   return playlistsStore.items.find((item) => item.id === playlistId.value) || null
+})
+const showLoadMoreAnchor = computed(() => playlistMoviesStore.hasMore && !playlistMoviesStore.error)
+const canLoadMoreMovies = computed(() => {
+  return showLoadMoreAnchor.value && !playlistMoviesStore.isLoading && !playlistMoviesStore.isLoadingMore
 })
 
 async function loadPlaylistPage(id: string) {
@@ -108,6 +114,12 @@ watch(playlistId, (id) => {
 watch(playlist, (value) => {
   playlistName.value = value?.name ?? ''
 })
+
+useInfiniteScroll({
+  target: loadMoreSentinel,
+  enabled: canLoadMoreMovies,
+  onLoadMore: () => playlistMoviesStore.loadMorePlaylistMovies(),
+})
 </script>
 
 <template>
@@ -185,7 +197,21 @@ watch(playlist, (value) => {
             </v-col>
           </v-row>
 
-          <div v-else class="playlist-page__empty">
+          <div
+            v-if="playlistMoviesStore.items.length && showLoadMoreAnchor"
+            ref="loadMoreSentinel"
+            class="playlist-content__load-more"
+          >
+            <v-progress-circular
+              v-if="playlistMoviesStore.isLoadingMore"
+              indeterminate
+              size="24"
+              width="2"
+              color="white"
+            />
+          </div>
+
+          <div v-if="!playlistMoviesStore.items.length" class="playlist-page__empty">
             В этом списке пока нет фильмов.
           </div>
         </template>
@@ -335,6 +361,12 @@ watch(playlist, (value) => {
 
 .playlist-content__count {
   color: var(--text-muted);
+}
+
+.playlist-content__load-more {
+  min-height: 80px;
+  display: grid;
+  place-items: center;
 }
 
 .playlist-page__state,
