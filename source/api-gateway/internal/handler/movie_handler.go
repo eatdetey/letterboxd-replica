@@ -2,8 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -54,20 +52,34 @@ type addMovieToPlaylistRequest struct {
 	MovieID string `json:"movie_id"`
 }
 
+type getMoviesRequest struct {
+	Limit           *int32   `json:"limit"`
+	Offset          *int32   `json:"offset"`
+	Search          string   `json:"search"`
+	Genre           string   `json:"genre"`
+	IDs             []string `json:"ids"`
+	PlaylistID      string   `json:"playlist_id"`
+	EnrichPlaylists *bool    `json:"enrich_playlists"`
+}
+
 func NewMovieHandler(client moviepb.MovieServiceClient) *MovieHandler {
 	return &MovieHandler{client: client}
 }
 
 func (h *MovieHandler) GetMovies(c fiber.Ctx) error {
-	limit, err := parseInt32Query(c.Query("limit"), defaultMoviesLimit, "limit")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-	offset, err := parseInt32Query(c.Query("offset"), defaultMoviesOffset, "offset")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	var reqBody getMoviesRequest
+	if err := c.Bind().Body(&reqBody); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
+	limit := defaultMoviesLimit
+	if reqBody.Limit != nil {
+		limit = *reqBody.Limit
+	}
+	offset := defaultMoviesOffset
+	if reqBody.Offset != nil {
+		offset = *reqBody.Offset
+	}
 	if limit <= 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "limit must be positive")
 	}
@@ -80,24 +92,26 @@ func (h *MovieHandler) GetMovies(c fiber.Ctx) error {
 		Offset: offset,
 	}
 
-	if search := strings.TrimSpace(c.Query("search")); search != "" {
+	if search := strings.TrimSpace(reqBody.Search); search != "" {
 		req.SearchQuery = &search
 	}
-	if genre := strings.TrimSpace(c.Query("genre")); genre != "" {
+	if genre := strings.TrimSpace(reqBody.Genre); genre != "" {
 		req.Genre = &genre
 	}
-	if ids := parseStrings(c.Query("ids")); len(ids) > 0 {
+	ids := make([]string, 0, len(reqBody.IDs))
+	for _, rawID := range reqBody.IDs {
+		if id := strings.TrimSpace(rawID); id != "" {
+			ids = append(ids, id)
+		}
+	}
+	if len(ids) > 0 {
 		req.Ids = ids
 	}
-	if playlistID := strings.TrimSpace(c.Query("playlist_id")); playlistID != "" {
+	if playlistID := strings.TrimSpace(reqBody.PlaylistID); playlistID != "" {
 		req.PlaylistId = &playlistID
 	}
-	if enrichRaw := strings.TrimSpace(c.Query("enrich_playlists")); enrichRaw != "" {
-		enrichPlaylists, err := strconv.ParseBool(enrichRaw)
-		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "enrich_playlists must be boolean")
-		}
-		req.EnrichPlaylists = enrichPlaylists
+	if reqBody.EnrichPlaylists != nil {
+		req.EnrichPlaylists = *reqBody.EnrichPlaylists
 	}
 
 	ctx, cancel := buildGRPCContext(c)
@@ -110,28 +124,39 @@ func (h *MovieHandler) GetMovies(c fiber.Ctx) error {
 
 	items := make([]movieResponse, 0, len(resp.Items))
 	for _, item := range resp.Items {
-		playlists := make([]playlistDetail, 0, len(item.Playlists))
-		for _, pl := range item.Playlists {
-			playlists = append(playlists, playlistDetail{
-				ID:   pl.Id,
-				Name: pl.Name,
-			})
-		}
-
-		items = append(items, movieResponse{
-			ID:          item.Id,
-			Title:       item.Title,
-			Description: item.Description,
-			ReleaseYear: item.ReleaseYear,
-			Genres:      item.Genres,
-			PosterURL:   item.Poster,
-			Playlists:   playlists,
-		})
+		items = append(items, mapMovieResponse(item))
 	}
 
 	return c.JSON(fiber.Map{
 		"items": items,
 		"total": resp.Total,
+	})
+}
+
+func (h *MovieHandler) GetMovieByID(c fiber.Ctx) error {
+	movieID := strings.TrimSpace(c.Params("id"))
+	if movieID == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "movie id is required")
+	}
+
+	ctx, cancel := buildGRPCContext(c)
+	defer cancel()
+
+	resp, err := h.client.GetMovies(ctx, &moviepb.GetMoviesRequest{
+		Limit:           1,
+		Offset:          0,
+		Ids:             []string{movieID},
+		EnrichPlaylists: true,
+	})
+	if err != nil {
+		return grpcErrorToFiber(err)
+	}
+	if len(resp.Items) == 0 {
+		return fiber.NewError(fiber.StatusNotFound, "movie not found")
+	}
+
+	return c.JSON(fiber.Map{
+		"movie": mapMovieResponse(resp.Items[0]),
 	})
 }
 
@@ -154,6 +179,35 @@ func (h *MovieHandler) GetPlaylists(c fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"items": items})
+}
+
+func (h *MovieHandler) GetPlaylistByID(c fiber.Ctx) error {
+	playlistID := strings.TrimSpace(c.Params("id"))
+	if playlistID == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "playlist id is required")
+	}
+
+	ctx, cancel := buildGRPCContext(c)
+	defer cancel()
+
+	resp, err := h.client.GetPlaylistsForUser(ctx, &moviepb.GetPlaylistsForUserRequest{})
+	if err != nil {
+		return grpcErrorToFiber(err)
+	}
+
+	for _, item := range resp.Items {
+		if item.GetId() == playlistID {
+			return c.JSON(fiber.Map{
+				"playlist": playlistResponse{
+					ID:          item.GetId(),
+					Name:        item.GetName(),
+					MoviesCount: item.GetMoviesCount(),
+				},
+			})
+		}
+	}
+
+	return fiber.NewError(fiber.StatusNotFound, "playlist not found")
 }
 
 func (h *MovieHandler) CreatePlaylist(c fiber.Ctx) error {
@@ -288,13 +342,22 @@ func buildGRPCContext(c fiber.Ctx) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(ctx, 5*time.Second)
 }
 
-func parseInt32Query(raw string, fallback int32, fieldName string) (int32, error) {
-	if strings.TrimSpace(raw) == "" {
-		return fallback, nil
+func mapMovieResponse(item *moviepb.MovieDetailed) movieResponse {
+	playlists := make([]playlistDetail, 0, len(item.Playlists))
+	for _, pl := range item.Playlists {
+		playlists = append(playlists, playlistDetail{
+			ID:   pl.Id,
+			Name: pl.Name,
+		})
 	}
-	value, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("%s must be integer", fieldName)
+
+	return movieResponse{
+		ID:          item.Id,
+		Title:       item.Title,
+		Description: item.Description,
+		ReleaseYear: item.ReleaseYear,
+		Genres:      item.Genres,
+		PosterURL:   item.Poster,
+		Playlists:   playlists,
 	}
-	return int32(value), nil
 }
