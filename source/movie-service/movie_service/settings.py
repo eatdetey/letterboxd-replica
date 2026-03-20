@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m(oin7-%h^$rw=gx%!%1s=@ec#h2d1ue!50a4zw2ves4%-%_nn'
+SECRET_KEY = os.environ.get("SECRET_KEY", 'django-insecure-m(oin7-%h^$rw=gx%!%1s=@ec#h2d1ue!50a4zw2ves4%-%_nn')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -57,30 +57,69 @@ TEMPLATES = [
     },
 ]
 
-db_url = os.environ.get("DB_CONNECTION_STRING")
-
-if db_url:
+def build_db_config_from_url(db_url: str):
     parsed = urlparse(db_url)
     query = parse_qs(parsed.query)
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': parsed.path.lstrip('/'),
+        'USER': parsed.username,
+        'PASSWORD': parsed.password,
+        'HOST': parsed.hostname,
+        'PORT': parsed.port or '',
+        'OPTIONS': {k: v for k, v in {'sslmode': query.get('sslmode', [None])[0]}.items() if v},
+    }
+
+
+def build_db_config_from_kv(dsn: str):
+    params = {}
+    for token in dsn.split():
+        if '=' not in token:
+            continue
+        key, value = token.split('=', 1)
+        params[key.strip()] = value.strip()
+
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': params.get('dbname'),
+        'USER': params.get('user'),
+        'PASSWORD': params.get('password'),
+        'HOST': params.get('host'),
+        'PORT': params.get('port'),
+        'OPTIONS': {k: v for k, v in {'sslmode': params.get('sslmode')}.items() if v},
+    }
+
+
+db_url = os.environ.get("DB_CONNECTION_STRING")
+
+DATABASES = None
+
+if db_url:
+    try:
+        if "://" in db_url:
+            DATABASES = {'default': build_db_config_from_url(db_url)}
+        else:
+            DATABASES = {'default': build_db_config_from_kv(db_url)}
+    except ValueError:
+        DATABASES = None
+
+if not DATABASES:
+    db_user = os.environ.get("DB_USER")
+    db_password = os.environ.get("DB_PASSWORD")
+    db_name = os.environ.get("DB_NAME")
+    db_host = os.environ.get("DB_HOST", "localhost")
+    db_port = os.environ.get("DB_PORT", "5432")
+    db_sslmode = os.environ.get("DB_SSLMODE", "disable")
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': parsed.path.lstrip('/'),
-            'USER': parsed.username,
-            'PASSWORD': parsed.password,
-            'HOST': parsed.hostname,
-            'PORT': parsed.port or '',
-            'OPTIONS': {
-                'sslmode': query.get('sslmode', [None])[0],
-            }
-        }
-    }
-    DATABASES['default']['OPTIONS'] = {k: v for k, v in DATABASES['default']['OPTIONS'].items() if v}
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': db_name,
+            'USER': db_user,
+            'PASSWORD': db_password,
+            'HOST': db_host,
+            'PORT': db_port,
+            'OPTIONS': {k: v for k, v in {'sslmode': db_sslmode}.items() if v},
         }
     }
 

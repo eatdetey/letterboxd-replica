@@ -1,5 +1,5 @@
 grpc_server:
-  port: ":50052"
+  port: ":50051"
   max_connection_idle: 300
   max_connection_age: 0
   max_connection_age_grace: 0

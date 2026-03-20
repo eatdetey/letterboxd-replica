@@ -29,7 +29,7 @@ def _parse_timeout(raw_value: str) -> float:
 
 class ReviewServiceHandler(review_pb2_grpc.ReviewServiceServicer):
     def __init__(self):
-        self.movie_service_address = os.environ.get("MOVIE_SERVICE_ADDRESS", "movie-service:50053")
+        self.movie_service_address = os.environ.get("MOVIE_SERVICE_ADDRESS", "movie-service:50051")
         self.movie_service_timeout = _parse_timeout(os.environ.get("MOVIE_SERVICE_TIMEOUT_SEC", "3"))
         self.movie_channel = grpc.insecure_channel(self.movie_service_address)
         self.movie_stub = movie_pb2_grpc.MovieServiceStub(self.movie_channel)
