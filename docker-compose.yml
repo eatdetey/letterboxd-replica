@@ -59,10 +59,10 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=movie_service.settings
       - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-db:5432/postgres?sslmode=disable
-      - MOVIE_SERVICE_PORT=50053
+      - MOVIE_SERVICE_PORT=50051
       - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
     ports:
-      - "50053:50053"
+      - "50053:50051"
     restart: unless-stopped
 
   movie-list-db:
@@ -94,7 +94,7 @@ services:
     volumes:
       - ./source/configs/movie-list-service/config.yaml:/etc/movie-list-service/config.yaml:ro
     ports:
-      - "50052:50052"
+      - "50052:50051"
     restart: unless-stopped
 
   review-db:
@@ -126,7 +126,7 @@ services:
     volumes:
       - ./source/configs/review-service/config.yaml:/etc/review-service/config.yaml:ro
     ports:
-      - "50054:50054"
+      - "50054:50051"
 
   api-gateway:
     build:
