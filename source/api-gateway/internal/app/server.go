@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	moviepb "github.com/eatdetey/letterboxd-replica/source/api-gateway/gen/go/movie/v1"
@@ -13,6 +14,7 @@ import (
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/router"
 	"github.com/eatdetey/letterboxd-replica/source/go-common/pkg/logger"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -152,10 +154,27 @@ func (s *Server) initFiber() {
 		},
 	})
 
+	corsCfg := s.cfg.HTTP.CORS
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     joinOrDefault(corsCfg.AllowOrigins, "*"),
+		AllowMethods:     joinOrDefault(corsCfg.AllowMethods, "GET,POST,PUT,PATCH,DELETE,OPTIONS"),
+		AllowHeaders:     joinOrDefault(corsCfg.AllowHeaders, "Origin,Content-Type,Accept,Authorization"),
+		ExposeHeaders:    strings.Join(corsCfg.ExposeHeaders, ","),
+		AllowCredentials: corsCfg.AllowCredentials,
+		MaxAge:           corsCfg.MaxAge,
+	}))
+
 	userHandler := handler.NewUserHandler(s.userClient)
 	movieHandler := handler.NewMovieHandler(s.movieClient)
 	reviewHandler := handler.NewReviewHandler(s.reviewClient)
 	router.Setup(app, userHandler, movieHandler, reviewHandler)
 
 	s.app = app
+}
+
+func joinOrDefault(values []string, fallback string) string {
+	if len(values) == 0 {
+		return fallback
+	}
+	return strings.Join(values, ",")
 }
