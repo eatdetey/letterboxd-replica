@@ -61,53 +61,74 @@ paths:
       responses:
         "200":
           description: New access token in response body and new refresh cookie
-  /v1/users:
-    get:
-      summary: Get users by ids or usernames
-      parameters:
-        - in: query
-          name: ids
-          schema: { type: string }
-        - in: query
-          name: usernames
-          schema: { type: string }
-        - in: query
-          name: limit
-          schema: { type: integer }
-        - in: query
-          name: offset
-          schema: { type: integer }
+  /v1/users/search:
+    post:
+      summary: Search users by ids or usernames
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items: { type: integer, format: int64 }
+                usernames:
+                  type: array
+                  items: { type: string }
+                limit: { type: integer }
+                offset: { type: integer }
       responses:
         "200":
           description: Users list
-  /v1/movies:
+  /v1/users/{id}:
     get:
-      summary: Get movies
+      summary: Get user by id
       parameters:
-        - in: query
-          name: limit
-          schema: { type: integer }
-        - in: query
-          name: offset
-          schema: { type: integer }
-        - in: query
-          name: search
-          schema: { type: string }
-        - in: query
-          name: genre
-          schema: { type: string }
-        - in: query
-          name: playlist_id
-          schema: { type: string }
-        - in: query
-          name: enrich_playlists
-          schema: { type: boolean }
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        "200":
+          description: User
+  /v1/movies/search:
+    post:
+      summary: Search movies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit: { type: integer }
+                offset: { type: integer }
+                search: { type: string }
+                genre: { type: string }
+                ids:
+                  type: array
+                  items: { type: string }
+                playlist_id: { type: string }
+                enrich_playlists: { type: boolean }
       responses:
         "200":
           description: Movies list
-  /v1/movies/{id}/reviews:
+  /v1/movies/{id}:
     get:
-      summary: Get movie reviews
+      summary: Get movie by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Movie
+  /v1/movies/{id}/reviews/search:
+    post:
+      summary: Get movie reviews list
       parameters:
         - in: path
           name: id
@@ -116,6 +137,22 @@ paths:
       responses:
         "200":
           description: Reviews list
+  /v1/movies/{id}/reviews/{review_id}:
+    get:
+      summary: Get movie review by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: review_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Review
+  /v1/movies/{id}/reviews:
     post:
       summary: Add review to movie
       security:
@@ -137,14 +174,15 @@ paths:
       responses:
         "201":
           description: Created review
-  /v1/playlists:
-    get:
+  /v1/playlists/search:
+    post:
       summary: Get current user playlists
       security:
         - bearerAuth: []
       responses:
         "200":
           description: Playlists
+  /v1/playlists:
     post:
       summary: Create playlist
       security:
@@ -162,6 +200,18 @@ paths:
         "201":
           description: Created playlist
   /v1/playlists/{id}:
+    get:
+      summary: Get playlist by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Playlist
     put:
       summary: Rename playlist
       security:

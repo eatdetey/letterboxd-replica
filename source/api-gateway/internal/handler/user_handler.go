@@ -33,6 +33,13 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
+type getUsersRequest struct {
+	IDs       []int64  `json:"ids"`
+	Usernames []string `json:"usernames"`
+	Limit     int32    `json:"limit"`
+	Offset    int32    `json:"offset"`
+}
+
 func (h *UserHandler) Register(c fiber.Ctx) error {
 	var req registerRequest
 	if err := c.Bind().Body(&req); err != nil {
@@ -114,20 +121,19 @@ func (h *UserHandler) Refresh(c fiber.Ctx) error {
 }
 
 func (h *UserHandler) GetUsers(c fiber.Ctx) error {
-	idsStr := c.Query("ids")
-	usernamesStr := c.Query("usernames")
-
-	ids, err := parseIDs(idsStr)
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "invalid ids")
+	var reqBody getUsersRequest
+	if err := c.Bind().Body(&reqBody); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
-	usernames := parseStrings(usernamesStr)
+	usernames := make([]string, 0, len(reqBody.Usernames))
+	for _, username := range reqBody.Usernames {
+		if trimmed := strings.TrimSpace(username); trimmed != "" {
+			usernames = append(usernames, trimmed)
+		}
+	}
 
-	limit, _ := strconv.Atoi(c.Query("limit", "0"))
-	offset, _ := strconv.Atoi(c.Query("offset", "0"))
-
-	if len(ids) == 0 && len(usernames) == 0 {
+	if len(reqBody.IDs) == 0 && len(usernames) == 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "ids or usernames must be provided")
 	}
 
@@ -137,10 +143,10 @@ func (h *UserHandler) GetUsers(c fiber.Ctx) error {
 	defer cancel()
 
 	resp, err := h.client.GetUsers(ctx, &userpb.GetUsersRequest{
-		Ids:       ids,
+		Ids:       reqBody.IDs,
 		Usernames: usernames,
-		Limit:     int32(limit),
-		Offset:    int32(offset),
+		Limit:     reqBody.Limit,
+		Offset:    reqBody.Offset,
 	})
 	if err != nil {
 		return grpcErrorToFiber(err)
@@ -156,23 +162,35 @@ func (h *UserHandler) GetUsers(c fiber.Ctx) error {
 	})
 }
 
-func parseIDs(raw string) ([]int64, error) {
-	if raw == "" {
-		return nil, nil
+func (h *UserHandler) GetUserByID(c fiber.Ctx) error {
+	idRaw := strings.TrimSpace(c.Params("id"))
+	if idRaw == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "user id is required")
 	}
-	parts := strings.Split(raw, ",")
-	result := make([]int64, 0, len(parts))
-	for _, p := range parts {
-		if p == "" {
-			continue
-		}
-		id, err := strconv.ParseInt(strings.TrimSpace(p), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, id)
+	id, err := strconv.ParseInt(idRaw, 10, 64)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "user id must be integer")
 	}
-	return result, nil
+
+	reqID, _ := c.Locals("request_id").(string)
+	ctx := grpcctx.FromFiber(c, reqID)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := h.client.GetUsers(ctx, &userpb.GetUsersRequest{
+		Ids:   []int64{id},
+		Limit: 1,
+	})
+	if err != nil {
+		return grpcErrorToFiber(err)
+	}
+	if len(resp.Users) == 0 {
+		return fiber.NewError(fiber.StatusNotFound, "user not found")
+	}
+
+	return c.JSON(map[string]any{
+		"user": mapper.UserFromPB(resp.Users[0]),
+	})
 }
 
 func parseStrings(raw string) []string {

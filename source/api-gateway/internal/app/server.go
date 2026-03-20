@@ -13,6 +13,7 @@ import (
 	"github.com/eatdetey/letterboxd-replica/source/api-gateway/internal/router"
 	"github.com/eatdetey/letterboxd-replica/source/go-common/pkg/logger"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -151,6 +152,29 @@ func (s *Server) initFiber() {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "internal error"})
 		},
 	})
+
+	corsCfg := s.cfg.HTTP.CORS
+	allowOrigins := corsCfg.AllowOrigins
+	if len(allowOrigins) == 0 {
+		allowOrigins = []string{"*"}
+	}
+	allowMethods := corsCfg.AllowMethods
+	if len(allowMethods) == 0 {
+		allowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
+	}
+	allowHeaders := corsCfg.AllowHeaders
+	if len(allowHeaders) == 0 {
+		allowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
+	}
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     allowOrigins,
+		AllowMethods:     allowMethods,
+		AllowHeaders:     allowHeaders,
+		ExposeHeaders:    corsCfg.ExposeHeaders,
+		AllowCredentials: corsCfg.AllowCredentials,
+		MaxAge:           corsCfg.MaxAge,
+	}))
 
 	userHandler := handler.NewUserHandler(s.userClient)
 	movieHandler := handler.NewMovieHandler(s.movieClient)
