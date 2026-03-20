@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { env } from '@shared/config/env'
+import { useAuthStore } from '~/entities/auth/model/authStore'
 import { moviesApi } from '../api/moviesApi'
 import { moviesMockApi } from '../api/moviesMockApi'
 import type { MovieDetailsDto } from './types'
@@ -26,6 +27,7 @@ export const useMovieDetailsStore = defineStore('movie-details', () => {
         item.value = await moviesApi.getMovie(movieId)
       } catch (movieError) {
         const message = movieError instanceof Error ? movieError.message : ''
+        const authStore = useAuthStore()
 
         if (!message.includes('HTTP 404')) {
           throw movieError
@@ -33,7 +35,7 @@ export const useMovieDetailsStore = defineStore('movie-details', () => {
 
         const response = await moviesApi.getMovies({
           ids: [movieId],
-          enrichPlaylists: true,
+          enrichPlaylists: authStore.isAuthenticated,
         })
         const fallbackMovie = response.items.find((movie) => movie.id === movieId)
 
