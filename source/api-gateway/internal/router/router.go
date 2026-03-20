@@ -25,6 +25,7 @@ func Setup(
 	v1.Post("/auth/register", userHandler.Register)
 	v1.Post("/auth/login", userHandler.Login)
 	v1.Post("/auth/refresh", userHandler.Refresh)
+	v1.Post("/auth/logout", userHandler.Logout)
 	v1.Post("/users/search", userHandler.GetUsers)
 	v1.Get("/users/:id", userHandler.GetUserByID)
 	v1.Post("/movies/search", movieHandler.GetMovies)

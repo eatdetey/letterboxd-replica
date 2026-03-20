@@ -8,6 +8,7 @@ service UserService {
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
     rpc Refresh(RefreshRequest) returns (RefreshResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse);
     rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
 }
 
@@ -60,6 +61,12 @@ message RefreshRequest {
 message RefreshResponse {
     Tokens tokens = 1;
 }
+
+message LogoutRequest {
+    string refresh_token = 1;
+}
+
+message LogoutResponse {}
 
 message GetUsersRequest {
     repeated int64 ids = 1;

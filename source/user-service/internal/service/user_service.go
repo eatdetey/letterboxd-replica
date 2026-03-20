@@ -196,6 +196,19 @@ func (s *UserService) Refresh(ctx context.Context, req *userpb.RefreshRequest) (
 	}, nil
 }
 
+func (s *UserService) Logout(ctx context.Context, req *userpb.LogoutRequest) (*userpb.LogoutResponse, error) {
+	if req == nil || req.RefreshToken == "" {
+		return nil, status.Error(codes.InvalidArgument, "refresh_token is required")
+	}
+
+	if err := s.repo.DeleteSessionByToken(ctx, req.RefreshToken); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		s.log.Errorw("user_service.delete_session_failed", "err", err)
+		return nil, status.Error(codes.Internal, "failed to delete session")
+	}
+
+	return &userpb.LogoutResponse{}, nil
+}
+
 func (s *UserService) GetUsers(ctx context.Context, req *userpb.GetUsersRequest) (*userpb.GetUsersResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is required")
