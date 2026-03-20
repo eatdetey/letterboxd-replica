@@ -1,6 +1,7 @@
 const useMocksEnv = import.meta.env.VITE_USE_MOCKS
 const useMoviesMocksEnv = import.meta.env.VITE_USE_MOCKS_MOVIES
 const useReviewsMocksEnv = import.meta.env.VITE_USE_MOCKS_REVIEWS
+const usePlaylistsMocksEnv = import.meta.env.VITE_USE_MOCKS_PLAYLISTS
 
 function resolveUseMocks(value: string | undefined, fallback: boolean) {
   return value ? value === 'true' : fallback
@@ -12,5 +13,6 @@ export const env = {
   useMocks,
   useMovieMocks: resolveUseMocks(useMoviesMocksEnv, useMocks),
   useReviewMocks: resolveUseMocks(useReviewsMocksEnv, useMocks),
+  usePlaylistMocks: resolveUseMocks(usePlaylistsMocksEnv, useMocks),
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
 }
