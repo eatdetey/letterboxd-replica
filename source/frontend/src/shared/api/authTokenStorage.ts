@@ -6,6 +6,10 @@ export const authTokenStorage = {
     return localStorage.getItem(ACCESS_TOKEN_KEY)
   },
 
+  setAccessToken(accessToken: string) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+  },
+
   setSession(user: unknown, accessToken: string) {
     localStorage.setItem(USER_KEY, JSON.stringify(user))
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
