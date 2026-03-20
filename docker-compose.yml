@@ -146,6 +146,7 @@ services:
       - review-service
     environment:
       - CONFIG_PATH=/etc/api-gateway/config.yaml
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
       - USER_SERVICE_ADDRESS=user-service:50051
       - MOVIE_SERVICE_ADDRESS=movie-service:50051
       - MOVIE_LIST_SERVICE_ADDRESS=movie-list-service:50051
