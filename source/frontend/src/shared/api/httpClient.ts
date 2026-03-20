@@ -25,6 +25,7 @@ export class HttpClient {
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...options,
       headers,
+      credentials: 'include',
     })
 
     if (!response.ok) {

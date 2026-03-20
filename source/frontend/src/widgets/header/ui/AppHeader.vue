@@ -40,14 +40,19 @@ async function goToProfile() {
   if (!authStore.isAuthenticated) {
     await router.push({
       name: 'login',
-      query: { redirect: '/user/john_doe' },
+      query: { redirect: '/' },
     })
+    return
+  }
+
+  if (!authStore.username) {
+    await router.push({ name: 'home' })
     return
   }
 
   await router.push({
     name: 'user',
-    params: { username: authStore.username || 'john_doe' },
+    params: { username: authStore.username },
   })
 }
 

@@ -8,6 +8,7 @@ const router = useRouter()
 const route = useRoute()
 
 const username = ref('')
+const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 
@@ -20,8 +21,9 @@ const redirectTo = computed(() => {
 })
 
 async function submit() {
-  await authStore.login({
+  await authStore.register({
     username: username.value.trim(),
+    email: email.value.trim(),
     password: password.value,
   })
 
@@ -40,14 +42,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="login-page">
-    <v-container class="login-page__container">
-      <v-card class="login-card" elevation="0">
-        <div class="login-card__copy">
-          <div class="login-card__eyebrow">Welcome back</div>
-          <h1 class="login-card__title">Sign in to Betterboxd</h1>
-          <p class="login-card__description">
-            Enter your username and password to continue.
+  <div class="register-page">
+    <v-container class="register-page__container">
+      <v-card class="register-card" elevation="0">
+        <div class="register-card__copy">
+          <div class="register-card__eyebrow">Create account</div>
+          <h1 class="register-card__title">Join Betterboxd</h1>
+          <p class="register-card__description">
+            Create an account to save playlists and continue exploring films.
           </p>
         </div>
 
@@ -55,12 +57,12 @@ onMounted(async () => {
           v-if="error"
           type="error"
           variant="tonal"
-          class="login-card__alert"
+          class="register-card__alert"
         >
           {{ error }}
         </v-alert>
 
-        <v-form class="login-form" @submit.prevent="submit">
+        <v-form class="register-form" @submit.prevent="submit">
           <v-text-field
             v-model="username"
             label="Username"
@@ -71,13 +73,24 @@ onMounted(async () => {
           />
 
           <v-text-field
+            v-model="email"
+            label="Email"
+            variant="outlined"
+            density="comfortable"
+            autocomplete="email"
+            required
+          />
+
+          <v-text-field
             v-model="password"
             :type="showPassword ? 'text' : 'password'"
             label="Password"
             variant="outlined"
             density="comfortable"
-            autocomplete="current-password"
+            autocomplete="new-password"
             required
+            hint="At least 8 characters with letters and digits"
+            persistent-hint
           />
 
           <v-checkbox
@@ -91,17 +104,17 @@ onMounted(async () => {
             type="submit"
             color="white"
             variant="flat"
-            class="login-form__submit"
+            class="register-form__submit"
             :loading="isLoading"
             block
           >
-            Sign in
+            Create account
           </v-btn>
 
-          <div class="login-form__footer">
-            <span>Don't have an account?</span>
-            <router-link class="login-form__link" :to="{ name: 'register', query: route.query }">
-              Create one
+          <div class="register-form__footer">
+            <span>Already have an account?</span>
+            <router-link class="register-form__link" :to="{ name: 'login', query: route.query }">
+              Sign in
             </router-link>
           </div>
         </v-form>
@@ -111,19 +124,19 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.login-page {
+.register-page {
   min-height: calc(100vh - 80px);
   display: grid;
   place-items: center;
   padding: 32px 0;
 }
 
-.login-page__container {
+.register-page__container {
   width: 100%;
   max-width: 560px;
 }
 
-.login-card {
+.register-card {
   background: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 28px;
@@ -133,44 +146,44 @@ onMounted(async () => {
   gap: 24px;
 }
 
-.login-card__copy {
+.register-card__copy {
   display: grid;
   gap: 10px;
 }
 
-.login-card__eyebrow {
+.register-card__eyebrow {
   color: var(--accent-soft);
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.75rem;
 }
 
-.login-card__title {
+.register-card__title {
   margin: 0;
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.05;
 }
 
-.login-card__description {
+.register-card__description {
   margin: 0;
   color: var(--text-secondary);
   line-height: 1.6;
 }
 
-.login-card__alert {
+.register-card__alert {
   border-radius: 16px;
 }
 
-.login-form {
+.register-form {
   display: grid;
   gap: 12px;
 }
 
-.login-form__submit {
+.register-form__submit {
   color: #0d0f12 !important;
 }
 
-.login-form__footer {
+.register-form__footer {
   display: flex;
   justify-content: center;
   gap: 6px;
@@ -179,14 +192,14 @@ onMounted(async () => {
   font-size: 0.95rem;
 }
 
-.login-form__link {
+.register-form__link {
   color: var(--text-primary);
   text-decoration: none;
   font-weight: 600;
 }
 
 @media (max-width: 600px) {
-  .login-card {
+  .register-card {
     padding: 20px;
   }
 }
