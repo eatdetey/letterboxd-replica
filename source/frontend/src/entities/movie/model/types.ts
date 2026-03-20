@@ -16,6 +16,14 @@ export interface MovieDto {
 }
 
 // TODO
+export interface MoviePreviewDto {
+  id: string
+  title: string
+  release_year: number
+  poster_url?: string | null
+}
+
+// TODO
 export interface MoviesListResponseDto {
   items: MovieDto[]
   total: number

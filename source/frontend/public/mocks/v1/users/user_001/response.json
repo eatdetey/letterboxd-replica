@@ -1,0 +1,22 @@
+{
+  "user": {
+    "id": "usr_1",
+    "username": "john_doe",
+    "avatar_url": "https://i.pravatar.cc/300",
+    "cover_url": "https://images.unsplash.com/photo-1504805572947-34fad45aed93",
+    "bio": "Film lover",
+    "stats": {
+      "filmsWatched": 120,
+      "reviewsCount": 34,
+      "listsCount": 5,
+      "averageRating": 3.8,
+      "followersCount": 12,
+      "followingCount": 8,
+      "likesCount": 45
+    }
+  },
+  "lists": [],
+  "reviews": [],
+  "recentRatings": [],
+  "watchlist": []
+}

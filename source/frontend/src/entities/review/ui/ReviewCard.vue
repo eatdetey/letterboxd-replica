@@ -2,7 +2,9 @@
 import { computed } from 'vue'
 import type { MovieReviewDto } from '../model/types'
 
-const props = defineProps<{ review: MovieReviewDto }>()
+type ReviewCardDto = Pick<MovieReviewDto, 'id' | 'username' | 'text' | 'created_at'>
+
+const props = defineProps<{ review: ReviewCardDto }>()
 
 const formattedDate = computed(() => {
   return new Intl.DateTimeFormat('en-US', {
