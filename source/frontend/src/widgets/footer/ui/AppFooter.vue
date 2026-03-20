@@ -1,13 +1,8 @@
 <template>
   <v-footer class="app-footer" height="auto">
     <v-container class="app-footer__container">
-      <div class="app-footer__brand">CineVault</div>
-      <div class="app-footer__links">
-        <a class="app-footer__link" href="#">About</a>
-        <a class="app-footer__link" href="#">Support</a>
-        <a class="app-footer__link" href="#">Terms</a>
-      </div>
-      <div class="app-footer__meta">Curated cinema stories, 2024</div>
+      <div class="app-footer__brand">Betterboxd</div>
+      <div class="app-footer__meta">Легенды ФИ 41/1, 2026</div>
     </v-container>
   </v-footer>
 </template>
