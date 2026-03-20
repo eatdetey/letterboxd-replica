@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserProfileStore } from '~/entities/user/model/userProfileStore'
 
@@ -10,6 +10,9 @@ const profileId = computed(() => String(route.params.username ?? route.params.id
 const user = computed(() => profileStore.item)
 const isLoading = computed(() => profileStore.isLoading)
 const error = computed(() => profileStore.error)
+const avatarLoadFailed = ref(false)
+const avatarUrl = computed(() => user.value?.avatar_url?.trim() || '')
+const shouldShowAvatarImage = computed(() => !!avatarUrl.value && !avatarLoadFailed.value)
 
 async function loadPageData(id: string) {
   if (!id) {
@@ -26,6 +29,14 @@ onMounted(() => {
 watch(profileId, (id) => {
   void loadPageData(id)
 })
+
+watch(avatarUrl, () => {
+  avatarLoadFailed.value = false
+})
+
+function handleAvatarError() {
+  avatarLoadFailed.value = true
+}
 </script>
 
 <template>
@@ -47,7 +58,16 @@ watch(profileId, (id) => {
       <template v-else-if="user">
         <section class="profile-card">
           <div class="profile-card__avatar" aria-hidden="true">
-            {{ user.username.charAt(0).toUpperCase() }}
+            <img
+              v-if="shouldShowAvatarImage"
+              :src="avatarUrl"
+              :alt="`${user.username} avatar`"
+              class="profile-card__avatar-image"
+              @error="handleAvatarError"
+            >
+            <span v-else>
+              {{ user.username.charAt(0).toUpperCase() }}
+            </span>
           </div>
 
           <div class="profile-card__content">
@@ -122,6 +142,14 @@ watch(profileId, (id) => {
   font-size: 3.5rem;
   font-weight: 700;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.profile-card__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .profile-card__content {
