@@ -121,10 +121,6 @@ async function handleLogout() {
 }
 
 @media (max-width: 960px) {
-  .app-header__nav {
-    display: none;
-  }
-
   .app-header__search {
     max-width: 180px;
   }

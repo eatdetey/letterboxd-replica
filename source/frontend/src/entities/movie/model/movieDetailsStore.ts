@@ -17,8 +17,32 @@ export const useMovieDetailsStore = defineStore('movie-details', () => {
     error.value = null
 
     try {
-      const api = env.useMocks ? moviesMockApi : moviesApi
-      item.value = await api.getMovie(movieId)
+      if (env.useMovieMocks) {
+        item.value = await moviesMockApi.getMovie(movieId)
+        return
+      }
+
+      try {
+        item.value = await moviesApi.getMovie(movieId)
+      } catch (movieError) {
+        const message = movieError instanceof Error ? movieError.message : ''
+
+        if (!message.includes('HTTP 404')) {
+          throw movieError
+        }
+
+        const response = await moviesApi.getMovies()
+        const fallbackMovie = response.items.find((movie) => movie.id === movieId)
+
+        if (!fallbackMovie) {
+          throw movieError
+        }
+
+        item.value = {
+          ...fallbackMovie,
+          playlists: fallbackMovie.playlists ?? [],
+        }
+      }
     } catch (loadError) {
       item.value = null
       error.value = loadError instanceof Error ? loadError.message : 'Unknown error'

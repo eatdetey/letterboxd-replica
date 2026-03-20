@@ -19,7 +19,7 @@ export const usePlaylistsStore = defineStore('playlists', () => {
     error.value = null
 
     try {
-      const api = env.useMocks ? playlistsMockApi : playlistsApi
+      const api = env.usePlaylistMocks ? playlistsMockApi : playlistsApi
       const response = await api.getPlaylists()
       items.value = response.items
     } catch (loadError) {
