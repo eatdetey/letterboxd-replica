@@ -28,11 +28,18 @@ export const usePlaylistMoviesStore = defineStore('playlist-movies', () => {
     }
   }
 
+  function reset() {
+    items.value = []
+    isLoading.value = false
+    error.value = null
+  }
+
   return {
     items,
     isLoading,
     error,
     total,
     loadPlaylistMovies,
+    reset,
   }
 })

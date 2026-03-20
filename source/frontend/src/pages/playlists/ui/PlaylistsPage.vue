@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePlaylistsStore } from '~/entities/playlist/model/playlistsStore'
 import PlaylistCard from '~/entities/playlist/ui/PlaylistCard.vue'
 
 const playlistsBackdropUrl =
   'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1600&q=80'
 
+const router = useRouter()
 const playlistsStore = usePlaylistsStore()
+const isCreateDialogOpen = ref(false)
+const playlistName = ref('')
+const createError = ref<string | null>(null)
 
 onMounted(() => {
   void playlistsStore.loadPlaylists()
@@ -14,6 +19,25 @@ onMounted(() => {
 
 const playlists = computed(() => playlistsStore.items)
 const totalMovies = computed(() => playlistsStore.totalMovies)
+
+async function createPlaylist() {
+  const name = playlistName.value.trim()
+  if (!name) {
+    createError.value = 'Playlist name is required'
+    return
+  }
+
+  createError.value = null
+
+  try {
+    const playlist = await playlistsStore.createPlaylist(name)
+    playlistName.value = ''
+    isCreateDialogOpen.value = false
+    await router.push({ name: 'playlist', params: { id: playlist.id } })
+  } catch (error) {
+    createError.value = error instanceof Error ? error.message : 'Failed to create playlist'
+  }
+}
 </script>
 
 <template>
@@ -38,6 +62,9 @@ const totalMovies = computed(() => playlistsStore.totalMovies)
       <v-container>
         <div class="playlists-section__header">
           <h2 class="playlists-section__title">All lists</h2>
+          <v-btn color="white" variant="flat" class="playlists-section__create" @click="isCreateDialogOpen = true">
+            Create list
+          </v-btn>
         </div>
 
         <div v-if="playlistsStore.isLoading" class="playlists-page__state">
@@ -70,6 +97,43 @@ const totalMovies = computed(() => playlistsStore.totalMovies)
         </div>
       </v-container>
     </section>
+
+    <v-dialog v-model="isCreateDialogOpen" max-width="480">
+      <v-card class="playlists-dialog" elevation="0">
+        <h2 class="playlists-dialog__title">Create playlist</h2>
+
+        <v-alert
+          v-if="createError"
+          type="error"
+          variant="tonal"
+          class="playlists-dialog__alert"
+        >
+          {{ createError }}
+        </v-alert>
+
+        <v-text-field
+          v-model="playlistName"
+          label="Playlist name"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          autofocus
+        />
+
+        <div class="playlists-dialog__actions">
+          <v-btn variant="text" @click="isCreateDialogOpen = false">Cancel</v-btn>
+          <v-btn
+            color="white"
+            variant="flat"
+            class="playlists-dialog__submit"
+            :loading="playlistsStore.isMutating"
+            @click="createPlaylist"
+          >
+            Create
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -156,6 +220,11 @@ const totalMovies = computed(() => playlistsStore.totalMovies)
 }
 
 .playlists-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 24px;
 }
 
@@ -176,6 +245,36 @@ const totalMovies = computed(() => playlistsStore.totalMovies)
 
 .playlists-page__alert {
   border-radius: 20px;
+}
+
+.playlists-section__create,
+.playlists-dialog__submit {
+  color: #0d0f12 !important;
+}
+
+.playlists-dialog {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.playlists-dialog__title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.playlists-dialog__alert {
+  border-radius: 16px;
+}
+
+.playlists-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 @media (max-width: 960px) {
