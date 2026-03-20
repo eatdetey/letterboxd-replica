@@ -1,6 +1,11 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
+ENV VITE_USE_MOCKS=false
+ENV VITE_USE_MOCKS_MOVIES=false
+ENV VITE_USE_MOCKS_REVIEWS=false
+ENV VITE_USE_MOCKS_PLAYLISTS=false
+
 COPY package*.json ./
 RUN npm ci
 
