@@ -193,7 +193,10 @@ async function openMovie(movieId: string) {
 
 async function goToFirstResult() {
   if (searchResults.value.length) {
-    await openMovie(searchResults.value[0].id)
+    const first = searchResults.value[0]
+    if (first) {
+      await openMovie(first.id)
+    }
   }
 }
 
