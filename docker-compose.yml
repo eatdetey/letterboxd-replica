@@ -149,6 +149,7 @@ services:
       - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
       - USER_SERVICE_ADDRESS=user-service:50051
       - MOVIE_SERVICE_ADDRESS=movie-service:50051
+      - REVIEW_SERVICE_ADDRESS=review-service:50051
       - MOVIE_LIST_SERVICE_ADDRESS=movie-list-service:50051
     volumes:
       - ./source/configs/api-gateway/config.yaml:/etc/api-gateway/config.yaml:ro
