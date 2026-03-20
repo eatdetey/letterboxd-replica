@@ -3,7 +3,7 @@ import requests
 from typing import Dict, Any
 
 BASE_URL = "http://localhost:8080/api/v1/movies"
-AUTH_TOKEN = "your_access_token_here" 
+AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6MywiVXNlcm5hbWUiOiJhc3lhbml4IiwiRW1haWwiOiJhc3lhQGdtYWlsLmNvbSIsIlN0YXR1cyI6ImFjdGl2ZSIsIlJvbGVzIjpbInVzZXIiXSwiSXNEZWxldGVkIjpmYWxzZSwic3ViIjoiMyIsImV4cCI6MTc3NDAzNDE3NywiaWF0IjoxNzc0MDMzMjc3fQ.XjrO5aT8bv6OxCwGeKAiEHCFDpGq-6RQnLLlvXkiBTM" 
 
 class TestMovieService:
     
