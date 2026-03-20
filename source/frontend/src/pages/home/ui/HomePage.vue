@@ -40,7 +40,6 @@ const allMovies = computed(() => moviesStore.all)
               >
                 View details
               </v-btn>
-              <v-btn color="white" variant="outlined" class="hero__secondary">Add to watchlist</v-btn>
             </div>
           </div>
 

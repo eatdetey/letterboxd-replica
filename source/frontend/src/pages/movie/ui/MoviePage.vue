@@ -199,7 +199,6 @@ async function submitReview() {
                   Add to list
                 </v-btn>
                 <v-btn color="white" variant="outlined" @click="openReviewDialog">Write a review</v-btn>
-                <v-btn color="white" variant="outlined">Mark as watched</v-btn>
               </div>
 
               <div v-if="playlists.length" class="movie-playlists">
