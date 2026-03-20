@@ -1,5 +1,9 @@
 import { httpClient } from '@shared/api/httpClient'
-import type { MovieReviewsResponseDto } from '../model/types'
+import type {
+  CreateMovieReviewPayloadDto,
+  CreateMovieReviewResponseDto,
+  MovieReviewsResponseDto,
+} from '../model/types'
 
 function isNotFound(error: unknown) {
   return error instanceof Error && error.message.includes('HTTP 404')
@@ -16,5 +20,12 @@ export const reviewsApi = {
 
       return httpClient.get<MovieReviewsResponseDto>(`/v1/movies/${movieId}/reviews`)
     }
+  },
+
+  createMovieReview(
+    movieId: string,
+    payload: CreateMovieReviewPayloadDto,
+  ): Promise<CreateMovieReviewResponseDto> {
+    return httpClient.post<CreateMovieReviewResponseDto>(`/v1/movies/${movieId}/reviews`, payload)
   },
 }

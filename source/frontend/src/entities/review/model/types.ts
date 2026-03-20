@@ -11,3 +11,13 @@ export interface MovieReviewDto {
 export interface MovieReviewsResponseDto {
   items: MovieReviewDto[]
 }
+
+// TODO
+export interface CreateMovieReviewPayloadDto {
+  text: string
+}
+
+// TODO
+export interface CreateMovieReviewResponseDto {
+  review: MovieReviewDto
+}
