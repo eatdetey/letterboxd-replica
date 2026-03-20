@@ -1,12 +1,14 @@
 <template>
   <v-app-bar flat class="app-header">
     <v-container class="app-header__container">
-      <router-link class="app-header__brand" :to="{ name: 'home' }">CineVault</router-link>
+      <router-link class="app-header__brand" :to="{ name: 'home' }">Betterboxd</router-link>
+
       <div class="app-header__nav">
         <v-btn variant="text" class="app-header__link" :to="{ name: 'home' }">Movies</v-btn>
         <v-btn variant="text" class="app-header__link" :to="{ name: 'playlists' }">Lists</v-btn>
-        <v-btn variant="text" class="app-header__link">Profile</v-btn>
+        <v-btn variant="text" class="app-header__link" @click="goToProfile">Profile</v-btn>
       </div>
+
       <div class="app-header__actions">
         <v-text-field
           density="compact"
@@ -15,11 +17,50 @@
           placeholder="Search for a film"
           class="app-header__search"
         />
-        <v-btn variant="outlined" class="app-header__logout">Log out</v-btn>
+        <v-btn
+          variant="outlined"
+          class="app-header__logout"
+          @click="handleLogout"
+        >
+          {{ authStore.isAuthenticated ? 'Log out' : 'Log in' }}
+        </v-btn>
       </div>
     </v-container>
   </v-app-bar>
 </template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '~/entities/auth/model/authStore'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+async function goToProfile() {
+  if (!authStore.isAuthenticated) {
+    await router.push({
+      name: 'login',
+      query: { redirect: '/user/john_doe' },
+    })
+    return
+  }
+
+  await router.push({
+    name: 'user',
+    params: { username: authStore.username || 'john_doe' },
+  })
+}
+
+async function handleLogout() {
+  if (authStore.isAuthenticated) {
+    authStore.logout()
+    await router.push({ name: 'home' })
+    return
+  }
+
+  await router.push({ name: 'login' })
+}
+</script>
 
 <style scoped>
 .app-header {
