@@ -20,7 +20,7 @@ def _parse_timeout(raw_value: str) -> float:
 
 class MovieListClient:
     def __init__(self, address: Optional[str] = None, timeout_sec: Optional[float] = None):
-        self.address = address or os.environ.get("MOVIE_LIST_SERVICE_ADDRESS", "movie-list-service:50052")
+        self.address = address or os.environ.get("MOVIE_LIST_SERVICE_ADDRESS", "movie-list-service:50051")
         default_timeout = _parse_timeout(os.environ.get("MOVIE_LIST_SERVICE_TIMEOUT_SEC", "3"))
         self.timeout_sec = timeout_sec if timeout_sec and timeout_sec > 0 else default_timeout
 

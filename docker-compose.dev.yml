@@ -2,9 +2,11 @@ services:
   user-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${USER_DB_USER}
-      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
-      POSTGRES_DB: ${USER_DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - user-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -23,19 +25,23 @@ services:
         condition: service_healthy
     environment:
       - CONFIG_PATH=/etc/user-service/config.yaml
-      - AUTH_ACCESS_SECRET=${ACCESS_SECRET}
-      - AUTH_REFRESH_SECRET=${REFRESH_SECRET}
-      - DB_CONNECTION_STRING=host=user-db port=5432 user=${USER_DB_USER} password=${USER_DB_PASSWORD} dbname=${USER_DB_NAME} sslmode=disable
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
+      - AUTH_REFRESH_SECRET=${REFRESH_SECRET:-default_refresh_secret}
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@user-db:5432/postgres?sslmode=disable
     volumes:
       - ./source/configs/user-service/config.yaml:/etc/user-service/config.yaml:ro
+    ports:
+      - "50051:50051"
     restart: unless-stopped
 
   movie-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${MOVIE_DB_USER}
-      POSTGRES_PASSWORD: ${MOVIE_DB_PASSWORD}
-      POSTGRES_DB: ${MOVIE_DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
     volumes:
       - movie-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -56,25 +62,22 @@ services:
         condition: service_started
     environment:
       - DJANGO_SETTINGS_MODULE=movie_service.settings
-      - DB_CONNECTION_STRING=host=movie-db port=5432 user=${MOVIE_DB_USER} password=${MOVIE_DB_PASSWORD} dbname=${MOVIE_DB_NAME} sslmode=disable
-      - DB_HOST=movie-db
-      - DB_PORT=5432
-      - DB_USER=${MOVIE_DB_USER}
-      - DB_PASSWORD=${MOVIE_DB_PASSWORD}
-      - DB_NAME=${MOVIE_DB_NAME}
-      - DB_SSLMODE=disable
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-db:5432/postgres?sslmode=disable
       - MOVIE_SERVICE_PORT=50051
-      - AUTH_ACCESS_SECRET=${ACCESS_SECRET}
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
       - MOVIE_LIST_SERVICE_ADDRESS=movie-list-service:50051
-      - SECRET_KEY=${MOVIE_SECRET_KEY}
+    ports:
+      - "50052:50051"
     restart: unless-stopped
 
   movie-list-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${MOVIE_LIST_DB_USER}
-      POSTGRES_PASSWORD: ${MOVIE_LIST_DB_PASSWORD}
-      POSTGRES_DB: ${MOVIE_LIST_DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5434:5432"
     volumes:
       - movie-list-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -82,7 +85,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    restart: unless-stopped
 
   movie-list-service:
     build:
@@ -93,18 +95,22 @@ services:
         condition: service_healthy
     environment:
       - CONFIG_PATH=/etc/movie-list-service/config.yaml
-      - DB_CONNECTION_STRING=host=movie-list-db port=5432 user=${MOVIE_LIST_DB_USER} password=${MOVIE_LIST_DB_PASSWORD} dbname=${MOVIE_LIST_DB_NAME} sslmode=disable
-      - AUTH_ACCESS_SECRET=${ACCESS_SECRET}
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@movie-list-db:5432/postgres?sslmode=disable
+      - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
     volumes:
       - ./source/configs/movie-list-service/config.yaml:/etc/movie-list-service/config.yaml:ro
+    ports:
+      - "50053:50051"
     restart: unless-stopped
 
   review-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${REVIEW_DB_USER}
-      POSTGRES_PASSWORD: ${REVIEW_DB_PASSWORD}
-      POSTGRES_DB: ${REVIEW_DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5435:5432"
     volumes:
       - review-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -122,17 +128,15 @@ services:
       review-db:
         condition: service_healthy
     environment:
-      - DB_CONNECTION_STRING=host=review-db port=5432 user=${REVIEW_DB_USER} password=${REVIEW_DB_PASSWORD} dbname=${REVIEW_DB_NAME} sslmode=disable
-      - DB_HOST=review-db
-      - DB_PORT=5432
-      - DB_USER=${REVIEW_DB_USER}
-      - DB_PASSWORD=${REVIEW_DB_PASSWORD}
-      - DB_NAME=${REVIEW_DB_NAME}
-      - DB_SSLMODE=disable
+      - CONFIG_PATH=/etc/review-service/config.yaml
+      - DB_CONNECTION_STRING=postgres://postgres:postgres@review-db:5432/postgres?sslmode=disable
       - REVIEW_SERVICE_PORT=50051
       - AUTH_ACCESS_SECRET=${ACCESS_SECRET:-default_access_secret}
       - MOVIE_SERVICE_ADDRESS=movie-service:50051
-      - SECRET_KEY=${REVIEW_SECRET_KEY}
+    volumes:
+      - ./source/configs/review-service/config.yaml:/etc/review-service/config.yaml:ro
+    ports:
+      - "50054:50051"
     restart: unless-stopped
 
   api-gateway:
@@ -152,18 +156,28 @@ services:
       - MOVIE_LIST_SERVICE_ADDRESS=movie-list-service:50051
     volumes:
       - ./source/configs/api-gateway/config.yaml:/etc/api-gateway/config.yaml:ro
+    ports:
+      - "8080:8080"
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ./source/frontend
-      dockerfile: Dockerfile
+    image: node:20-alpine
+    working_dir: /app
     depends_on:
       - api-gateway
     environment:
-      - API_URL=http://api-gateway:8080
+      - VITE_API_BASE_URL=/api
+      - VITE_API_GATEWAY_URL=http://api-gateway:8080
+      - VITE_USE_MOCKS=false
+      - VITE_USE_MOCKS_MOVIES=false
+      - VITE_USE_MOCKS_REVIEWS=false
+      - VITE_USE_MOCKS_PLAYLISTS=false
+    volumes:
+      - ./source/frontend:/app
+      - frontend-node-modules:/app/node_modules
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
     ports:
-      - "80:80"
+      - "5173:5173"
     restart: unless-stopped
 
 volumes:
@@ -171,3 +185,4 @@ volumes:
   movie-db-data:
   movie-list-db-data:
   review-db-data:
+  frontend-node-modules:

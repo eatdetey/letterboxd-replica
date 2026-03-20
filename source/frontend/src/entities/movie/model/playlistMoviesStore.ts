@@ -17,7 +17,7 @@ export const usePlaylistMoviesStore = defineStore('playlist-movies', () => {
     error.value = null
 
     try {
-      const api = env.useMocks ? moviesMockApi : moviesApi
+      const api = env.useMovieMocks ? moviesMockApi : moviesApi
       const response = await api.getMovies({ playlistId })
       items.value = response.items
     } catch (loadError) {
@@ -28,11 +28,18 @@ export const usePlaylistMoviesStore = defineStore('playlist-movies', () => {
     }
   }
 
+  function reset() {
+    items.value = []
+    isLoading.value = false
+    error.value = null
+  }
+
   return {
     items,
     isLoading,
     error,
     total,
     loadPlaylistMovies,
+    reset,
   }
 })

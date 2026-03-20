@@ -29,8 +29,23 @@ export class HttpClient {
     })
 
     if (!response.ok) {
+      if (response.status === 401) {
+        // Drop local session if backend says we're unauthorized.
+        authTokenStorage.clearSession()
+        // Soft redirect to login; avoids bringing router dependency here.
+        window.location.assign('/login')
+      }
       const errorText = await response.text()
       throw new Error(`HTTP ${response.status}: ${errorText}`)
+    }
+
+    if (response.status === 204) {
+      return undefined as T
+    }
+
+    const contentLength = response.headers.get('content-length')
+    if (contentLength === '0') {
+      return undefined as T
     }
 
     return response.json() as Promise<T>

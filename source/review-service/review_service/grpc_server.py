@@ -13,7 +13,7 @@ from grpc_layer.interceptors import RequestIdInterceptor, AuthInterceptor
 
 
 def serve():
-    port = os.environ.get("REVIEW_SERVICE_PORT", "50054")
+    port = os.environ.get("REVIEW_SERVICE_PORT", "50051")
     access_secret = os.environ.get("AUTH_ACCESS_SECRET")
 
     if not access_secret:

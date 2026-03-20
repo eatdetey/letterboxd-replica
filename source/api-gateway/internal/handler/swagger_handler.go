@@ -61,6 +61,14 @@ paths:
       responses:
         "200":
           description: New access token in response body and new refresh cookie
+  /v1/auth/logout:
+    post:
+      summary: Logout user by refresh cookie
+      security:
+        - refreshCookie: []
+      responses:
+        "204":
+          description: Logged out
   /v1/users/search:
     post:
       summary: Search users by ids or usernames

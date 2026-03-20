@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '~/entities/auth/model/authStore'
 import { useMovieDetailsStore } from '~/entities/movie/model/movieDetailsStore'
 import { useMovieReviewsStore } from '~/entities/review/model/movieReviewsStore'
+import { playlistsApi } from '~/entities/playlist/api/playlistsApi'
+import { usePlaylistsStore } from '~/entities/playlist/model/playlistsStore'
 import ReviewCard from '~/entities/review/ui/ReviewCard.vue'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 const movieDetailsStore = useMovieDetailsStore()
 const movieReviewsStore = useMovieReviewsStore()
+const playlistsStore = usePlaylistsStore()
+const isPlaylistDialogOpen = ref(false)
+const selectedPlaylistId = ref('')
+const newPlaylistName = ref('')
+const playlistActionError = ref<string | null>(null)
+const isSubmittingPlaylist = ref(false)
+const isReviewDialogOpen = ref(false)
+const reviewText = ref('')
+const reviewActionError = ref<string | null>(null)
 
 const movieId = computed(() => String(route.params.id ?? ''))
 const movie = computed(() => movieDetailsStore.item)
@@ -34,6 +48,114 @@ onMounted(() => {
 watch(movieId, (id) => {
   void loadPageData(id)
 })
+
+async function openReviewDialog() {
+  if (!authStore.isAuthenticated) {
+    await router.push({
+      name: 'login',
+      query: { redirect: route.fullPath },
+    })
+    return
+  }
+
+  reviewActionError.value = null
+  reviewText.value = ''
+  isReviewDialogOpen.value = true
+}
+
+async function openPlaylistDialog() {
+  if (!authStore.isAuthenticated) {
+    await router.push({
+      name: 'login',
+      query: { redirect: route.fullPath },
+    })
+    return
+  }
+
+  playlistActionError.value = null
+  selectedPlaylistId.value = ''
+  newPlaylistName.value = ''
+
+  if (!playlistsStore.items.length) {
+    await playlistsStore.loadPlaylists()
+  }
+
+  isPlaylistDialogOpen.value = true
+}
+
+async function addMovieToPlaylist() {
+  if (!movie.value) {
+    return
+  }
+
+  if (!selectedPlaylistId.value) {
+    playlistActionError.value = 'Select a playlist first'
+    return
+  }
+
+  isSubmittingPlaylist.value = true
+  playlistActionError.value = null
+
+  try {
+    await playlistsApi.addMovieToPlaylist(selectedPlaylistId.value, movie.value.id)
+    playlistsStore.updateMoviesCount(selectedPlaylistId.value, 1)
+    await movieDetailsStore.loadMovie(movie.value.id)
+    isPlaylistDialogOpen.value = false
+  } catch (error) {
+    playlistActionError.value = error instanceof Error ? error.message : 'Failed to add movie to playlist'
+  } finally {
+    isSubmittingPlaylist.value = false
+  }
+}
+
+async function createPlaylistAndAddMovie() {
+  if (!movie.value) {
+    return
+  }
+
+  const name = newPlaylistName.value.trim()
+  if (!name) {
+    playlistActionError.value = 'Playlist name is required'
+    return
+  }
+
+  isSubmittingPlaylist.value = true
+  playlistActionError.value = null
+
+  try {
+    const playlist = await playlistsStore.createPlaylist(name)
+    await playlistsApi.addMovieToPlaylist(playlist.id, movie.value.id)
+    playlistsStore.updateMoviesCount(playlist.id, 1)
+    await movieDetailsStore.loadMovie(movie.value.id)
+    isPlaylistDialogOpen.value = false
+  } catch (error) {
+    playlistActionError.value = error instanceof Error ? error.message : 'Failed to create playlist'
+  } finally {
+    isSubmittingPlaylist.value = false
+  }
+}
+
+async function submitReview() {
+  if (!movie.value) {
+    return
+  }
+
+  const text = reviewText.value.trim()
+  if (!text) {
+    reviewActionError.value = 'Review text is required'
+    return
+  }
+
+  reviewActionError.value = null
+
+  try {
+    await movieReviewsStore.createReview(movie.value.id, { text })
+    reviewText.value = ''
+    isReviewDialogOpen.value = false
+  } catch (submitError) {
+    reviewActionError.value = submitError instanceof Error ? submitError.message : 'Failed to create review'
+  }
+}
 </script>
 
 <template>
@@ -73,9 +195,10 @@ watch(movieId, (id) => {
               <p class="movie-hero__description">{{ movie.description }}</p>
 
               <div class="movie-hero__actions">
-                <v-btn color="white" variant="flat" class="movie-hero__primary">Add to watchlist</v-btn>
-                <v-btn color="white" variant="outlined">Write a review</v-btn>
-                <v-btn color="white" variant="outlined">Mark as watched</v-btn>
+                <v-btn color="white" variant="flat" class="movie-hero__primary" @click="openPlaylistDialog">
+                  Add to list
+                </v-btn>
+                <v-btn color="white" variant="outlined" @click="openReviewDialog">Write a review</v-btn>
               </div>
 
               <div v-if="playlists.length" class="movie-playlists">
@@ -119,6 +242,106 @@ watch(movieId, (id) => {
         Фильм не найден.
       </div>
     </v-container>
+
+    <v-dialog v-model="isPlaylistDialogOpen" max-width="520">
+      <v-card class="playlist-dialog" elevation="0">
+        <h2 class="playlist-dialog__title">Add to playlist</h2>
+
+        <v-alert
+          v-if="playlistActionError"
+          type="error"
+          variant="tonal"
+          class="playlist-dialog__alert"
+        >
+          {{ playlistActionError }}
+        </v-alert>
+
+        <v-select
+          v-model="selectedPlaylistId"
+          label="Choose playlist"
+          variant="outlined"
+          density="comfortable"
+          :items="playlistsStore.items"
+          item-title="name"
+          item-value="id"
+          hide-details
+        />
+
+        <div class="playlist-dialog__actions">
+          <v-btn variant="text" @click="isPlaylistDialogOpen = false">Cancel</v-btn>
+          <v-btn
+            color="white"
+            variant="flat"
+            class="playlist-dialog__submit"
+            :loading="isSubmittingPlaylist"
+            @click="addMovieToPlaylist"
+          >
+            Add
+          </v-btn>
+        </div>
+
+        <div class="playlist-dialog__divider"></div>
+
+        <div class="playlist-dialog__subtitle">Or create a new playlist</div>
+
+        <v-text-field
+          v-model="newPlaylistName"
+          label="New playlist name"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+        />
+
+        <div class="playlist-dialog__actions">
+          <v-btn
+            color="white"
+            variant="flat"
+            class="playlist-dialog__submit"
+            :loading="isSubmittingPlaylist"
+            @click="createPlaylistAndAddMovie"
+          >
+            Create and add
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="isReviewDialogOpen" max-width="640">
+      <v-card class="playlist-dialog" elevation="0">
+        <h2 class="playlist-dialog__title">Write a review</h2>
+
+        <v-alert
+          v-if="reviewActionError"
+          type="error"
+          variant="tonal"
+          class="playlist-dialog__alert"
+        >
+          {{ reviewActionError }}
+        </v-alert>
+
+        <v-textarea
+          v-model="reviewText"
+          label="Your review"
+          variant="outlined"
+          rows="6"
+          auto-grow
+          hide-details
+        />
+
+        <div class="playlist-dialog__actions">
+          <v-btn variant="text" @click="isReviewDialogOpen = false">Cancel</v-btn>
+          <v-btn
+            color="white"
+            variant="flat"
+            class="playlist-dialog__submit"
+            :loading="movieReviewsStore.isSubmitting"
+            @click="submitReview"
+          >
+            Publish
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -233,6 +456,45 @@ watch(movieId, (id) => {
 .movie-playlists__chip {
   color: var(--text-primary) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.playlist-dialog {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.playlist-dialog__title {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.playlist-dialog__subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.playlist-dialog__alert {
+  border-radius: 16px;
+}
+
+.playlist-dialog__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.playlist-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.playlist-dialog__submit {
+  color: #0d0f12 !important;
 }
 
 .reviews-section {
