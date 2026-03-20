@@ -88,7 +88,7 @@ const isSearchOpen = ref(false)
 
 let searchTimer: number | undefined
 
-const moviesSearchApi = env.useMocks ? moviesMockApi : moviesApi
+const moviesSearchApi = env.useMovieMocks ? moviesMockApi : moviesApi
 
 const canSearch = computed(() => searchQuery.value.trim().length >= 2)
 
