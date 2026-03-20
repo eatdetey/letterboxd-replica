@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import MovieCard from '~/entities/movie/ui/MovieCard.vue'
 import { usePlaylistMoviesStore } from '~/entities/movie/model/playlistMoviesStore'
+import { playlistsApi } from '~/entities/playlist/api/playlistsApi'
 import { usePlaylistsStore } from '~/entities/playlist/model/playlistsStore'
 
 const route = useRoute()
+const router = useRouter()
 const playlistsStore = usePlaylistsStore()
 const playlistMoviesStore = usePlaylistMoviesStore()
+const isRenameDialogOpen = ref(false)
+const isDeleteDialogOpen = ref(false)
+const playlistName = ref('')
+const actionError = ref<string | null>(null)
+const activeMovieId = ref<string | null>(null)
 
 const playlistId = computed(() => String(route.params.id ?? ''))
 const playlist = computed(() => {
@@ -19,11 +26,75 @@ async function loadPlaylistPage(id: string) {
     return
   }
 
-  if (!playlistsStore.items.length) {
-    await playlistsStore.loadPlaylists()
+  const currentPlaylist = await playlistsStore.loadPlaylist(id)
+
+  if (!currentPlaylist) {
+    playlistMoviesStore.reset()
+    return
+  }
+
+  if (currentPlaylist.movies_count === 0) {
+    playlistMoviesStore.reset()
+    return
   }
 
   await playlistMoviesStore.loadPlaylistMovies(id)
+}
+
+async function renamePlaylist() {
+  if (!playlist.value) {
+    return
+  }
+
+  const name = playlistName.value.trim()
+  if (!name) {
+    actionError.value = 'Playlist name is required'
+    return
+  }
+
+  actionError.value = null
+
+  try {
+    await playlistsStore.renamePlaylist(playlist.value.id, name)
+    isRenameDialogOpen.value = false
+  } catch (error) {
+    actionError.value = error instanceof Error ? error.message : 'Failed to rename playlist'
+  }
+}
+
+async function deletePlaylist() {
+  if (!playlist.value) {
+    return
+  }
+
+  actionError.value = null
+
+  try {
+    await playlistsStore.deletePlaylist(playlist.value.id)
+    isDeleteDialogOpen.value = false
+    await router.replace({ name: 'playlists' })
+  } catch (error) {
+    actionError.value = error instanceof Error ? error.message : 'Failed to delete playlist'
+  }
+}
+
+async function removeMovie(movieId: string) {
+  if (!playlist.value) {
+    return
+  }
+
+  activeMovieId.value = movieId
+  actionError.value = null
+
+  try {
+    await playlistsApi.removeMovieFromPlaylist(playlist.value.id, movieId)
+    playlistsStore.updateMoviesCount(playlist.value.id, -1)
+    await playlistMoviesStore.loadPlaylistMovies(playlist.value.id)
+  } catch (error) {
+    actionError.value = error instanceof Error ? error.message : 'Failed to remove movie from playlist'
+  } finally {
+    activeMovieId.value = null
+  }
 }
 
 onMounted(() => {
@@ -32,6 +103,10 @@ onMounted(() => {
 
 watch(playlistId, (id) => {
   void loadPlaylistPage(id)
+})
+
+watch(playlist, (value) => {
+  playlistName.value = value?.name ?? ''
 })
 </script>
 
@@ -48,11 +123,24 @@ watch(playlistId, (id) => {
         <div class="playlist-hero__meta" v-if="playlist">
           <span>{{ playlist.movies_count }} movies</span>
         </div>
+        <div v-if="playlist" class="playlist-hero__actions">
+          <v-btn variant="outlined" color="white" @click="isRenameDialogOpen = true">Rename list</v-btn>
+          <v-btn variant="outlined" color="white" @click="isDeleteDialogOpen = true">Delete list</v-btn>
+        </div>
       </v-container>
     </section>
 
     <section class="playlist-content">
       <v-container>
+        <v-alert
+          v-if="actionError"
+          type="error"
+          variant="tonal"
+          class="playlist-page__alert"
+        >
+          {{ actionError }}
+        </v-alert>
+
         <div v-if="playlistMoviesStore.isLoading" class="playlist-page__state">
           <v-progress-circular indeterminate color="white" />
         </div>
@@ -81,7 +169,19 @@ watch(playlistId, (id) => {
               md="4"
               lg="3"
             >
-              <MovieCard :movie="movie" />
+              <div class="playlist-movie">
+                <MovieCard :movie="movie" />
+                <v-btn
+                  variant="outlined"
+                  color="white"
+                  block
+                  class="playlist-movie__remove"
+                  :loading="activeMovieId === movie.id"
+                  @click="removeMovie(movie.id)"
+                >
+                  Remove from list
+                </v-btn>
+              </div>
             </v-col>
           </v-row>
 
@@ -95,6 +195,53 @@ watch(playlistId, (id) => {
         </div>
       </v-container>
     </section>
+
+    <v-dialog v-model="isRenameDialogOpen" max-width="480">
+      <v-card class="playlist-dialog" elevation="0">
+        <h2 class="playlist-dialog__title">Rename playlist</h2>
+        <v-text-field
+          v-model="playlistName"
+          label="Playlist name"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          autofocus
+        />
+        <div class="playlist-dialog__actions">
+          <v-btn variant="text" @click="isRenameDialogOpen = false">Cancel</v-btn>
+          <v-btn
+            color="white"
+            variant="flat"
+            class="playlist-dialog__submit"
+            :loading="playlistsStore.isMutating"
+            @click="renamePlaylist"
+          >
+            Save
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="isDeleteDialogOpen" max-width="460">
+      <v-card class="playlist-dialog" elevation="0">
+        <h2 class="playlist-dialog__title">Delete playlist</h2>
+        <p class="playlist-dialog__description">
+          This action will remove the playlist and its movie links for the current user.
+        </p>
+        <div class="playlist-dialog__actions">
+          <v-btn variant="text" @click="isDeleteDialogOpen = false">Cancel</v-btn>
+          <v-btn
+            color="white"
+            variant="flat"
+            class="playlist-dialog__submit"
+            :loading="playlistsStore.isMutating"
+            @click="deletePlaylist"
+          >
+            Delete
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -160,6 +307,12 @@ watch(playlistId, (id) => {
   color: var(--text-secondary);
 }
 
+.playlist-hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .playlist-content {
   padding: 0 12px;
 }
@@ -194,6 +347,44 @@ watch(playlistId, (id) => {
 
 .playlist-page__alert {
   border-radius: 20px;
+}
+
+.playlist-movie {
+  display: grid;
+  gap: 12px;
+  height: 100%;
+}
+
+.playlist-movie__remove,
+.playlist-dialog__submit {
+  color: #0d0f12 !important;
+}
+
+.playlist-dialog {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.playlist-dialog__title {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.playlist-dialog__description {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.playlist-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 @media (max-width: 960px) {

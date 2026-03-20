@@ -31,7 +31,10 @@ export const useMovieDetailsStore = defineStore('movie-details', () => {
           throw movieError
         }
 
-        const response = await moviesApi.getMovies()
+        const response = await moviesApi.getMovies({
+          ids: [movieId],
+          enrichPlaylists: true,
+        })
         const fallbackMovie = response.items.find((movie) => movie.id === movieId)
 
         if (!fallbackMovie) {
