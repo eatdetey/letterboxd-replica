@@ -44,7 +44,7 @@ func LoadServerConfig() (*ServerConfig, error) {
 }
 
 func setServerDefaults(v *viper.Viper) {
-	settings.SetGRPCServerDefaults(v, "grpc_server", ":50052")
+	settings.SetGRPCServerDefaults(v, "grpc_server", ":50051")
 	settings.SetPostgresDefaults(v, "db")
 	settings.SetMigrateDefaults(v, "migrate")
 	settings.SetShutdownDefaults(v, "shutdown")

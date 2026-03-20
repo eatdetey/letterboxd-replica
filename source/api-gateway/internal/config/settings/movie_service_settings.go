@@ -7,5 +7,5 @@ type MovieServiceSettings struct {
 }
 
 func SetMovieServiceDefaults(v *viper.Viper, prefix string) {
-	v.SetDefault(prefix+".address", "localhost:50052")
+	v.SetDefault(prefix+".address", "localhost:50051")
 }

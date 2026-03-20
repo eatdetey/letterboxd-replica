@@ -17,15 +17,3 @@ http:
     expose_headers: []
     allow_credentials: true
     max_age: 600
-
-user_service:
-  address: "user-service:50051"
-
-movie_service:
-  address: "movie-service:50053"
-
-movie_list_service:
-  address: "movie-list-service:50051"
-
-review_service:
-  address: "review-service:50054"
